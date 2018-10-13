@@ -6,38 +6,37 @@
 // Description : A MOS 6502 CPU emulator written in C++
 //============================================================================
 
+#pragma once
+
 #include <iostream>
-#include <stdint.h>
-using namespace std;
+#include <cstdint>
 
-#define NEGATIVE  0x80
-#define OVERFLOW  0x40
-#define CONSTANT  0x20
-#define BREAK     0x10
-#define DECIMAL   0x08
-#define INTERRUPT 0x04
-#define ZERO      0x02
-#define CARRY     0x01
+constexpr auto status_negative = 0x80;
+constexpr auto status_overflow = 0x40;
+constexpr auto status_constant = 0x20;
+constexpr auto status_break = 0x10;
+constexpr auto status_decimal = 0x08;
+constexpr auto status_interrupt = 0x04;
+constexpr auto status_zero = 0x02;
+constexpr auto status_carry = 0x01;
 
-#define SET_NEGATIVE(x) (x ? (status |= NEGATIVE) : (status &= (~NEGATIVE)) )
-#define SET_OVERFLOW(x) (x ? (status |= OVERFLOW) : (status &= (~OVERFLOW)) )
-#define SET_CONSTANT(x) (x ? (status |= CONSTANT) : (status &= (~CONSTANT)) )
-#define SET_BREAK(x) (x ? (status |= BREAK) : (status &= (~BREAK)) )
-#define SET_DECIMAL(x) (x ? (status |= DECIMAL) : (status &= (~DECIMAL)) )
-#define SET_INTERRUPT(x) (x ? (status |= INTERRUPT) : (status &= (~INTERRUPT)) )
-#define SET_ZERO(x) (x ? (status |= ZERO) : (status &= (~ZERO)) )
-#define SET_CARRY(x) (x ? (status |= CARRY) : (status &= (~CARRY)) )
+#define SET_NEGATIVE(x) (x ? (status |= status_negative) : (status &= (~status_negative)) )
+#define SET_OVERFLOW(x) (x ? (status |= status_overflow) : (status &= (~status_overflow)) )
+#define SET_CONSTANT(x) (x ? (status |= status_constant) : (status &= (~status_constant)) )
+#define SET_BREAK(x) (x ? (status |= status_break) : (status &= (~status_break)) )
+#define SET_DECIMAL(x) (x ? (status |= status_decimal) : (status &= (~status_decimal)) )
+#define SET_INTERRUPT(x) (x ? (status |= status_interrupt) : (status &= (~status_interrupt)) )
+#define SET_ZERO(x) (x ? (status |= status_zero) : (status &= (~status_zero)) )
+#define SET_CARRY(x) (x ? (status |= status_carry) : (status &= (~status_carry)) )
 
-#define IF_NEGATIVE() ((status & NEGATIVE) ? true : false)
-#define IF_OVERFLOW() ((status & OVERFLOW) ? true : false)
-#define IF_CONSTANT() ((status & CONSTANT) ? true : false)
-#define IF_BREAK() ((status & BREAK) ? true : false)
-#define IF_DECIMAL() ((status & DECIMAL) ? true : false)
-#define IF_INTERRUPT() ((status & INTERRUPT) ? true : false)
-#define IF_ZERO() ((status & ZERO) ? true : false)
-#define IF_CARRY() ((status & CARRY) ? true : false)
-
-
+#define IF_NEGATIVE() ((status & status_negative) ? true : false)
+#define IF_OVERFLOW() ((status & status_overflow) ? true : false)
+#define IF_CONSTANT() ((status & status_constant) ? true : false)
+#define IF_BREAK() ((status & status_break) ? true : false)
+#define IF_DECIMAL() ((status & status_decimal) ? true : false)
+#define IF_INTERRUPT() ((status & status_interrupt) ? true : false)
+#define IF_ZERO() ((status & status_zero) ? true : false)
+#define IF_CARRY() ((status & status_carry) ? true : false)
 
 class mos6502
 {
@@ -63,7 +62,7 @@ private:
 	typedef void (mos6502::*CodeExec)(uint16_t);
 	typedef uint16_t (mos6502::*AddrExec)();
 
-	typedef struct Instr
+	struct Instr
 	{
 		AddrExec addr;
 		CodeExec code;

@@ -1,0 +1,31 @@
+# OSX
+.DS_Store
+
+# Vim
+*.swp
+
+# Cmake
+CMakeFiles/
+cmake_install.cmake
+
+# Linux
+Makefile
+*.a
+docs
+
+# CLion
+.idea
+
+# Build folders
+vs_build/
+build/
+cmake-build-*/
+
+# Visual Studio
+.vs/
+
+# BeyondCompare merge
+*.orig
+
+*.tmp
+*.TMP
