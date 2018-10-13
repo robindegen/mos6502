@@ -24,12 +24,14 @@
 set(LIBMOS6502_SOURCES
     src/mos6502.cpp
     include/mos6502/mos6502.h
+    src/status_registers.h
 )
 
 add_library(libmos6502 STATIC ${LIBMOS6502_SOURCES})
 
 target_include_directories(libmos6502
     PUBLIC include
+    PRIVATE src
 )
 
 set_target_properties(
