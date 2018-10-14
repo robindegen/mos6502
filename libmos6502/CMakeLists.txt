@@ -22,8 +22,8 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 
 set(LIBMOS6502_SOURCES
-    src/mos6502.cpp
-    include/mos6502/mos6502.h
+    src/cpu_mos6502.cpp
+    include/mos6502/cpu_mos6502.h
     src/status_registers.h
 )
 
