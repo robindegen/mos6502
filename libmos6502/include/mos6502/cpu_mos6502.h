@@ -49,6 +49,9 @@ private:
 
     void exec(const instruction i) noexcept;
 
+    void stack_push(std::uint8_t byte) noexcept;
+    auto stack_pop() noexcept -> std::uint8_t;
+
     // addressing modes
     auto addr_acc() noexcept -> std::uint16_t; // ACCUMULATOR
     auto addr_imm() noexcept -> std::uint16_t; // IMMEDIATE
@@ -140,10 +143,6 @@ private:
 
     void initialize_illegal_opcodes() noexcept;
     void initialize_opcodes() noexcept;
-
-    // stack operations
-    void stack_push(std::uint8_t byte) noexcept;
-    auto stack_pop() noexcept -> std::uint8_t;
 
     std::array<instruction, 256> instruction_;
 
