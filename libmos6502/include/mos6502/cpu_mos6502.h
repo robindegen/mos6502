@@ -141,24 +141,17 @@ private:
 
     static instruction InstrTable[256];
 
-    bool illegalOpcode;
+    bool illegalOpcode{};
 
-    // registers
-    uint8_t A; // accumulator
-    uint8_t X; // X-index
-    uint8_t Y; // Y-index
-
-    // stack pointer
-    uint8_t sp;
-
-    // program counter
-    uint16_t pc;
-
-    // status register
-    uint8_t status;
+    std::uint8_t A{};
+    std::uint8_t X{};
+    std::uint8_t Y{};
+    std::uint8_t sp{};
+    std::uint16_t pc{};
+    std::uint8_t status{};
 
     // consumed clock cycles
-    uint32_t cycles;
+    uint32_t cycles{};
 
     bus_read_func bus_read_func_;
     bus_write_func bus_write_func_;
