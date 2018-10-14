@@ -52,6 +52,9 @@ private:
     void stack_push(std::uint8_t byte) noexcept;
     auto stack_pop() noexcept -> std::uint8_t;
 
+    void bus_write(const std::uint16_t address, const std::uint8_t value) const noexcept;
+    auto bus_read(const std::uint16_t address) const noexcept -> std::uint8_t;
+
     // addressing modes
     auto addr_acc() noexcept -> std::uint16_t; // ACCUMULATOR
     auto addr_imm() noexcept -> std::uint16_t; // IMMEDIATE
