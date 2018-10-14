@@ -4,11 +4,11 @@
 namespace mos6502
 {
 
-cpu_mos6502::cpu_mos6502(BusRead r, BusWrite w)
+cpu_mos6502::cpu_mos6502(bus_read_func r, bus_write_func w)
 {
-    Write = (BusWrite)w;
-    Read = (BusRead)r;
-    Instr instr;
+    Write = (bus_write_func)w;
+    Read = (bus_read_func)r;
+    instruction instr;
 
     // fill jump table with ILLEGALs
     instr.addr = &cpu_mos6502::Addr_IMP;
@@ -726,7 +726,7 @@ void cpu_mos6502::Run(uint32_t n)
 {
     uint32_t start = cycles;
     uint8_t opcode;
-    Instr instr;
+    instruction instr;
 
     while (start + n > cycles && !illegalOpcode)
     {
@@ -743,7 +743,7 @@ void cpu_mos6502::Run(uint32_t n)
     }
 }
 
-void cpu_mos6502::Exec(Instr i)
+void cpu_mos6502::Exec(instruction i)
 {
     uint16_t src = (this->*i.addr)();
     (this->*i.code)(src);

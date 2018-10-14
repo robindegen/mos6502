@@ -17,10 +17,10 @@ class cpu_mos6502
 {
 public:
     // read/write callbacks
-    typedef void (*BusWrite)(uint16_t, uint8_t);
-    typedef uint8_t (*BusRead)(uint16_t);
+    using bus_write_func = void (*)(const std::uint16_t, const std::uint8_t) noexcept;
+    using bus_read_func = auto (*)(const std::uint16_t) noexcept -> std::uint8_t;
 
-    cpu_mos6502(BusRead r, BusWrite w);
+    cpu_mos6502(bus_read_func r, bus_write_func w);
     void NMI();
     void IRQ();
     void Reset();
@@ -44,18 +44,18 @@ private:
     // consumed clock cycles
     uint32_t cycles;
 
-    typedef void (cpu_mos6502::*CodeExec)(uint16_t);
-    typedef uint16_t (cpu_mos6502::*AddrExec)();
+    using opcode_exec_func = void (cpu_mos6502::*)(std::uint16_t);
+    using addr_exec_func = std::uint16_t (cpu_mos6502::*)();
 
-    struct Instr
+    struct instruction
     {
-        AddrExec addr;
-        CodeExec code;
+        addr_exec_func addr;
+        opcode_exec_func code;
     };
 
-    Instr InstrTable[256];
+    instruction InstrTable[256];
 
-    void Exec(Instr i);
+    void Exec(instruction i);
 
     bool illegalOpcode;
 
@@ -156,8 +156,8 @@ private:
     static const uint16_t nmiVectorH = 0xFFFB;
     static const uint16_t nmiVectorL = 0xFFFA;
 
-    BusRead Read;
-    BusWrite Write;
+    bus_read_func Read;
+    bus_write_func Write;
 
     // stack operations
     inline void StackPush(uint8_t byte);
