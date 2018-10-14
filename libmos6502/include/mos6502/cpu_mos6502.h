@@ -27,23 +27,6 @@ public:
     void Run(uint32_t n);
 
 private:
-    // registers
-    uint8_t A; // accumulator
-    uint8_t X; // X-index
-    uint8_t Y; // Y-index
-
-    // stack pointer
-    uint8_t sp;
-
-    // program counter
-    uint16_t pc;
-
-    // status register
-    uint8_t status;
-
-    // consumed clock cycles
-    uint32_t cycles;
-
     using opcode_exec_func = void (cpu_mos6502::*)(std::uint16_t);
     using addr_exec_func = std::uint16_t (cpu_mos6502::*)();
 
@@ -53,11 +36,7 @@ private:
         opcode_exec_func code;
     };
 
-    instruction InstrTable[256];
-
     void Exec(instruction i);
-
-    bool illegalOpcode;
 
     // addressing modes
     uint16_t Addr_ACC(); // ACCUMULATOR
@@ -148,6 +127,10 @@ private:
 
     void Op_ILLEGAL(uint16_t src);
 
+    // stack operations
+    inline void StackPush(uint8_t byte);
+    inline uint8_t StackPop();
+
     // IRQ, reset, NMI vectors
     static const uint16_t irqVectorH = 0xFFFF;
     static const uint16_t irqVectorL = 0xFFFE;
@@ -156,12 +139,29 @@ private:
     static const uint16_t nmiVectorH = 0xFFFB;
     static const uint16_t nmiVectorL = 0xFFFA;
 
+    static instruction InstrTable[256];
+
+    bool illegalOpcode;
+
+    // registers
+    uint8_t A; // accumulator
+    uint8_t X; // X-index
+    uint8_t Y; // Y-index
+
+    // stack pointer
+    uint8_t sp;
+
+    // program counter
+    uint16_t pc;
+
+    // status register
+    uint8_t status;
+
+    // consumed clock cycles
+    uint32_t cycles;
+
     bus_read_func bus_read_func_;
     bus_write_func bus_write_func_;
-
-    // stack operations
-    inline void StackPush(uint8_t byte);
-    inline uint8_t StackPop();
 };
 
 } // namespace mos6502
