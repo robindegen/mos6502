@@ -39,7 +39,7 @@ public:
 
 private:
     using opcode_exec_func = void (cpu_mos6502::*)(std::uint16_t);
-    using addr_exec_func = std::uint16_t (cpu_mos6502::*)();
+    using addr_exec_func = auto (cpu_mos6502::*)() noexcept -> std::uint16_t;
 
     struct instruction
     {
@@ -50,19 +50,19 @@ private:
     void exec(const instruction i);
 
     // addressing modes
-    uint16_t Addr_ACC(); // ACCUMULATOR
-    uint16_t Addr_IMM(); // IMMEDIATE
-    uint16_t Addr_ABS(); // ABSOLUTE
-    uint16_t Addr_ZER(); // ZERO PAGE
-    uint16_t Addr_ZEX(); // INDEXED-X ZERO PAGE
-    uint16_t Addr_ZEY(); // INDEXED-Y ZERO PAGE
-    uint16_t Addr_ABX(); // INDEXED-X ABSOLUTE
-    uint16_t Addr_ABY(); // INDEXED-Y ABSOLUTE
-    uint16_t Addr_IMP(); // IMPLIED
-    uint16_t Addr_REL(); // RELATIVE
-    uint16_t Addr_INX(); // INDEXED-X INDIRECT
-    uint16_t Addr_INY(); // INDEXED-Y INDIRECT
-    uint16_t Addr_ABI(); // ABSOLUTE INDIRECT
+    auto addr_acc() noexcept -> std::uint16_t; // ACCUMULATOR
+    auto addr_imm() noexcept -> std::uint16_t; // IMMEDIATE
+    auto addr_abs() noexcept -> std::uint16_t; // ABSOLUTE
+    auto addr_zer() noexcept -> std::uint16_t; // ZERO PAGE
+    auto addr_zex() noexcept -> std::uint16_t; // INDEXED-X ZERO PAGE
+    auto addr_zey() noexcept -> std::uint16_t; // INDEXED-Y ZERO PAGE
+    auto addr_abx() noexcept -> std::uint16_t; // INDEXED-X ABSOLUTE
+    auto addr_aby() noexcept -> std::uint16_t; // INDEXED-Y ABSOLUTE
+    auto addr_imp() noexcept -> std::uint16_t; // IMPLIED
+    auto addr_rel() noexcept -> std::uint16_t; // RELATIVE
+    auto addr_inx() noexcept -> std::uint16_t; // INDEXED-X INDIRECT
+    auto addr_iny() noexcept -> std::uint16_t; // INDEXED-Y INDIRECT
+    auto addr_abi() noexcept -> std::uint16_t; // ABSOLUTE INDIRECT
 
     // opcodes (grouped as per datasheet)
     void Op_ADC(uint16_t src);

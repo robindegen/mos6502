@@ -15,34 +15,34 @@ cpu_mos6502::cpu_mos6502(const bus_read_func read_func, const bus_write_func wri
     reset();
 }
 
-uint16_t cpu_mos6502::Addr_ACC()
+auto cpu_mos6502::addr_acc() noexcept -> std::uint16_t
 {
     return 0; // not used
 }
 
-uint16_t cpu_mos6502::Addr_IMM()
+auto cpu_mos6502::addr_imm() noexcept -> std::uint16_t
 {
     return pc++;
 }
 
-uint16_t cpu_mos6502::Addr_ABS()
+auto cpu_mos6502::addr_abs() noexcept -> std::uint16_t
 {
     const std::uint16_t addr_l = bus_read_func_(pc++);
     const std::uint16_t addr_h = bus_read_func_(pc++);
     return addr_l + (addr_h << 8);
 }
 
-uint16_t cpu_mos6502::Addr_ZER()
+auto cpu_mos6502::addr_zer() noexcept -> std::uint16_t
 {
     return bus_read_func_(pc++);
 }
 
-uint16_t cpu_mos6502::Addr_IMP()
+auto cpu_mos6502::addr_imp() noexcept -> std::uint16_t
 {
     return 0; // not used
 }
 
-uint16_t cpu_mos6502::Addr_REL()
+auto cpu_mos6502::addr_rel() noexcept -> std::uint16_t
 {
     auto offset = static_cast<uint16_t>(bus_read_func_(pc++));
 
@@ -52,7 +52,7 @@ uint16_t cpu_mos6502::Addr_REL()
     return pc + static_cast<int16_t>(offset);
 }
 
-uint16_t cpu_mos6502::Addr_ABI()
+auto cpu_mos6502::addr_abi() noexcept -> std::uint16_t
 {
     const std::uint16_t addr_l = bus_read_func_(pc++);
     const std::uint16_t addr_h = bus_read_func_(pc++);
@@ -65,38 +65,38 @@ uint16_t cpu_mos6502::Addr_ABI()
     return eff_l + 0x100 * eff_h;
 }
 
-uint16_t cpu_mos6502::Addr_ZEX()
+auto cpu_mos6502::addr_zex() noexcept -> std::uint16_t
 {
     return (bus_read_func_(pc++) + X) % 256;
 }
 
-uint16_t cpu_mos6502::Addr_ZEY()
+auto cpu_mos6502::addr_zey() noexcept -> std::uint16_t
 {
     return (bus_read_func_(pc++) + Y) % 256;
 }
 
-uint16_t cpu_mos6502::Addr_ABX()
+auto cpu_mos6502::addr_abx() noexcept -> std::uint16_t
 {
     const std::uint16_t addr_l = bus_read_func_(pc++);
     const std::uint16_t addr_h = bus_read_func_(pc++);
     return addr_l + (addr_h << 8) + X;
 }
 
-uint16_t cpu_mos6502::Addr_ABY()
+auto cpu_mos6502::addr_aby() noexcept -> std::uint16_t
 {
     const std::uint16_t addr_l = bus_read_func_(pc++);
     const std::uint16_t addr_h = bus_read_func_(pc++);
     return addr_l + (addr_h << 8) + Y;
 }
 
-uint16_t cpu_mos6502::Addr_INX()
+auto cpu_mos6502::addr_inx() noexcept -> std::uint16_t
 {
     const std::uint16_t zero_l = (bus_read_func_(pc++) + X) % 256;
     const std::uint16_t zero_h = (zero_l + 1) % 256;
     return bus_read_func_(zero_l) + (bus_read_func_(zero_h) << 8);
 }
 
-uint16_t cpu_mos6502::Addr_INY()
+auto cpu_mos6502::addr_iny() noexcept -> std::uint16_t
 {
     const std::uint16_t zero_l = bus_read_func_(pc++);
     const std::uint16_t zero_h = (zero_l + 1) % 256;
@@ -202,218 +202,218 @@ void cpu_mos6502::initialize_illegal_opcodes()
 {
     for (auto &i : instruction_)
     {
-        i = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_ILLEGAL};
+        i = {&cpu_mos6502::addr_imp, &cpu_mos6502::Op_ILLEGAL};
     }
 }
 
 void cpu_mos6502::initialize_opcodes()
 {
-    instruction_[0x69] = {&cpu_mos6502::Addr_IMM, &cpu_mos6502::Op_ADC};
-    instruction_[0x6D] = {&cpu_mos6502::Addr_ABS, &cpu_mos6502::Op_ADC};
-    instruction_[0x65] = {&cpu_mos6502::Addr_ZER, &cpu_mos6502::Op_ADC};
-    instruction_[0x61] = {&cpu_mos6502::Addr_INX, &cpu_mos6502::Op_ADC};
-    instruction_[0x71] = {&cpu_mos6502::Addr_INY, &cpu_mos6502::Op_ADC};
-    instruction_[0x75] = {&cpu_mos6502::Addr_ZEX, &cpu_mos6502::Op_ADC};
-    instruction_[0x7D] = {&cpu_mos6502::Addr_ABX, &cpu_mos6502::Op_ADC};
-    instruction_[0x79] = {&cpu_mos6502::Addr_ABY, &cpu_mos6502::Op_ADC};
+    instruction_[0x69] = {&cpu_mos6502::addr_imm, &cpu_mos6502::Op_ADC};
+    instruction_[0x6D] = {&cpu_mos6502::addr_abs, &cpu_mos6502::Op_ADC};
+    instruction_[0x65] = {&cpu_mos6502::addr_zer, &cpu_mos6502::Op_ADC};
+    instruction_[0x61] = {&cpu_mos6502::addr_inx, &cpu_mos6502::Op_ADC};
+    instruction_[0x71] = {&cpu_mos6502::addr_iny, &cpu_mos6502::Op_ADC};
+    instruction_[0x75] = {&cpu_mos6502::addr_zex, &cpu_mos6502::Op_ADC};
+    instruction_[0x7D] = {&cpu_mos6502::addr_abx, &cpu_mos6502::Op_ADC};
+    instruction_[0x79] = {&cpu_mos6502::addr_aby, &cpu_mos6502::Op_ADC};
 
-    instruction_[0x29] = {&cpu_mos6502::Addr_IMM, &cpu_mos6502::Op_AND};
-    instruction_[0x2D] = {&cpu_mos6502::Addr_ABS, &cpu_mos6502::Op_AND};
-    instruction_[0x25] = {&cpu_mos6502::Addr_ZER, &cpu_mos6502::Op_AND};
-    instruction_[0x21] = {&cpu_mos6502::Addr_INX, &cpu_mos6502::Op_AND};
-    instruction_[0x31] = {&cpu_mos6502::Addr_INY, &cpu_mos6502::Op_AND};
-    instruction_[0x35] = {&cpu_mos6502::Addr_ZEX, &cpu_mos6502::Op_AND};
-    instruction_[0x3D] = {&cpu_mos6502::Addr_ABX, &cpu_mos6502::Op_AND};
-    instruction_[0x39] = {&cpu_mos6502::Addr_ABY, &cpu_mos6502::Op_AND};
+    instruction_[0x29] = {&cpu_mos6502::addr_imm, &cpu_mos6502::Op_AND};
+    instruction_[0x2D] = {&cpu_mos6502::addr_abs, &cpu_mos6502::Op_AND};
+    instruction_[0x25] = {&cpu_mos6502::addr_zer, &cpu_mos6502::Op_AND};
+    instruction_[0x21] = {&cpu_mos6502::addr_inx, &cpu_mos6502::Op_AND};
+    instruction_[0x31] = {&cpu_mos6502::addr_iny, &cpu_mos6502::Op_AND};
+    instruction_[0x35] = {&cpu_mos6502::addr_zex, &cpu_mos6502::Op_AND};
+    instruction_[0x3D] = {&cpu_mos6502::addr_abx, &cpu_mos6502::Op_AND};
+    instruction_[0x39] = {&cpu_mos6502::addr_aby, &cpu_mos6502::Op_AND};
 
-    instruction_[0x0E] = {&cpu_mos6502::Addr_ABS, &cpu_mos6502::Op_ASL};
-    instruction_[0x06] = {&cpu_mos6502::Addr_ZER, &cpu_mos6502::Op_ASL};
-    instruction_[0x0A] = {&cpu_mos6502::Addr_ACC, &cpu_mos6502::Op_ASL_ACC};
-    instruction_[0x16] = {&cpu_mos6502::Addr_ZEX, &cpu_mos6502::Op_ASL};
-    instruction_[0x1E] = {&cpu_mos6502::Addr_ABX, &cpu_mos6502::Op_ASL};
+    instruction_[0x0E] = {&cpu_mos6502::addr_abs, &cpu_mos6502::Op_ASL};
+    instruction_[0x06] = {&cpu_mos6502::addr_zer, &cpu_mos6502::Op_ASL};
+    instruction_[0x0A] = {&cpu_mos6502::addr_acc, &cpu_mos6502::Op_ASL_ACC};
+    instruction_[0x16] = {&cpu_mos6502::addr_zex, &cpu_mos6502::Op_ASL};
+    instruction_[0x1E] = {&cpu_mos6502::addr_abx, &cpu_mos6502::Op_ASL};
 
-    instruction_[0x90] = {&cpu_mos6502::Addr_REL, &cpu_mos6502::Op_BCC};
+    instruction_[0x90] = {&cpu_mos6502::addr_rel, &cpu_mos6502::Op_BCC};
 
-    instruction_[0xB0] = {&cpu_mos6502::Addr_REL, &cpu_mos6502::Op_BCS};
+    instruction_[0xB0] = {&cpu_mos6502::addr_rel, &cpu_mos6502::Op_BCS};
 
-    instruction_[0xF0] = {&cpu_mos6502::Addr_REL, &cpu_mos6502::Op_BEQ};
+    instruction_[0xF0] = {&cpu_mos6502::addr_rel, &cpu_mos6502::Op_BEQ};
 
-    instruction_[0x2C] = {&cpu_mos6502::Addr_ABS, &cpu_mos6502::Op_BIT};
-    instruction_[0x24] = {&cpu_mos6502::Addr_ZER, &cpu_mos6502::Op_BIT};
+    instruction_[0x2C] = {&cpu_mos6502::addr_abs, &cpu_mos6502::Op_BIT};
+    instruction_[0x24] = {&cpu_mos6502::addr_zer, &cpu_mos6502::Op_BIT};
 
-    instruction_[0x30] = {&cpu_mos6502::Addr_REL, &cpu_mos6502::Op_BMI};
+    instruction_[0x30] = {&cpu_mos6502::addr_rel, &cpu_mos6502::Op_BMI};
 
-    instruction_[0xD0] = {&cpu_mos6502::Addr_REL, &cpu_mos6502::Op_BNE};
+    instruction_[0xD0] = {&cpu_mos6502::addr_rel, &cpu_mos6502::Op_BNE};
 
-    instruction_[0x10] = {&cpu_mos6502::Addr_REL, &cpu_mos6502::Op_BPL};
+    instruction_[0x10] = {&cpu_mos6502::addr_rel, &cpu_mos6502::Op_BPL};
 
-    instruction_[0x00] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_BRK};
+    instruction_[0x00] = {&cpu_mos6502::addr_imp, &cpu_mos6502::Op_BRK};
 
-    instruction_[0x50] = {&cpu_mos6502::Addr_REL, &cpu_mos6502::Op_BVC};
+    instruction_[0x50] = {&cpu_mos6502::addr_rel, &cpu_mos6502::Op_BVC};
 
-    instruction_[0x70] = {&cpu_mos6502::Addr_REL, &cpu_mos6502::Op_BVS};
+    instruction_[0x70] = {&cpu_mos6502::addr_rel, &cpu_mos6502::Op_BVS};
 
-    instruction_[0x18] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_CLC};
+    instruction_[0x18] = {&cpu_mos6502::addr_imp, &cpu_mos6502::Op_CLC};
 
-    instruction_[0xD8] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_CLD};
+    instruction_[0xD8] = {&cpu_mos6502::addr_imp, &cpu_mos6502::Op_CLD};
 
-    instruction_[0x58] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_CLI};
+    instruction_[0x58] = {&cpu_mos6502::addr_imp, &cpu_mos6502::Op_CLI};
 
-    instruction_[0xB8] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_CLV};
+    instruction_[0xB8] = {&cpu_mos6502::addr_imp, &cpu_mos6502::Op_CLV};
 
-    instruction_[0xC9] = {&cpu_mos6502::Addr_IMM, &cpu_mos6502::Op_CMP};
-    instruction_[0xCD] = {&cpu_mos6502::Addr_ABS, &cpu_mos6502::Op_CMP};
-    instruction_[0xC5] = {&cpu_mos6502::Addr_ZER, &cpu_mos6502::Op_CMP};
-    instruction_[0xC1] = {&cpu_mos6502::Addr_INX, &cpu_mos6502::Op_CMP};
-    instruction_[0xD1] = {&cpu_mos6502::Addr_INY, &cpu_mos6502::Op_CMP};
-    instruction_[0xD5] = {&cpu_mos6502::Addr_ZEX, &cpu_mos6502::Op_CMP};
-    instruction_[0xDD] = {&cpu_mos6502::Addr_ABX, &cpu_mos6502::Op_CMP};
-    instruction_[0xD9] = {&cpu_mos6502::Addr_ABY, &cpu_mos6502::Op_CMP};
+    instruction_[0xC9] = {&cpu_mos6502::addr_imm, &cpu_mos6502::Op_CMP};
+    instruction_[0xCD] = {&cpu_mos6502::addr_abs, &cpu_mos6502::Op_CMP};
+    instruction_[0xC5] = {&cpu_mos6502::addr_zer, &cpu_mos6502::Op_CMP};
+    instruction_[0xC1] = {&cpu_mos6502::addr_inx, &cpu_mos6502::Op_CMP};
+    instruction_[0xD1] = {&cpu_mos6502::addr_iny, &cpu_mos6502::Op_CMP};
+    instruction_[0xD5] = {&cpu_mos6502::addr_zex, &cpu_mos6502::Op_CMP};
+    instruction_[0xDD] = {&cpu_mos6502::addr_abx, &cpu_mos6502::Op_CMP};
+    instruction_[0xD9] = {&cpu_mos6502::addr_aby, &cpu_mos6502::Op_CMP};
 
-    instruction_[0xE0] = {&cpu_mos6502::Addr_IMM, &cpu_mos6502::Op_CPX};
-    instruction_[0xEC] = {&cpu_mos6502::Addr_ABS, &cpu_mos6502::Op_CPX};
-    instruction_[0xE4] = {&cpu_mos6502::Addr_ZER, &cpu_mos6502::Op_CPX};
+    instruction_[0xE0] = {&cpu_mos6502::addr_imm, &cpu_mos6502::Op_CPX};
+    instruction_[0xEC] = {&cpu_mos6502::addr_abs, &cpu_mos6502::Op_CPX};
+    instruction_[0xE4] = {&cpu_mos6502::addr_zer, &cpu_mos6502::Op_CPX};
 
-    instruction_[0xC0] = {&cpu_mos6502::Addr_IMM, &cpu_mos6502::Op_CPY};
-    instruction_[0xCC] = {&cpu_mos6502::Addr_ABS, &cpu_mos6502::Op_CPY};
-    instruction_[0xC4] = {&cpu_mos6502::Addr_ZER, &cpu_mos6502::Op_CPY};
+    instruction_[0xC0] = {&cpu_mos6502::addr_imm, &cpu_mos6502::Op_CPY};
+    instruction_[0xCC] = {&cpu_mos6502::addr_abs, &cpu_mos6502::Op_CPY};
+    instruction_[0xC4] = {&cpu_mos6502::addr_zer, &cpu_mos6502::Op_CPY};
 
-    instruction_[0xCE] = {&cpu_mos6502::Addr_ABS, &cpu_mos6502::Op_DEC};
-    instruction_[0xC6] = {&cpu_mos6502::Addr_ZER, &cpu_mos6502::Op_DEC};
-    instruction_[0xD6] = {&cpu_mos6502::Addr_ZEX, &cpu_mos6502::Op_DEC};
-    instruction_[0xDE] = {&cpu_mos6502::Addr_ABX, &cpu_mos6502::Op_DEC};
+    instruction_[0xCE] = {&cpu_mos6502::addr_abs, &cpu_mos6502::Op_DEC};
+    instruction_[0xC6] = {&cpu_mos6502::addr_zer, &cpu_mos6502::Op_DEC};
+    instruction_[0xD6] = {&cpu_mos6502::addr_zex, &cpu_mos6502::Op_DEC};
+    instruction_[0xDE] = {&cpu_mos6502::addr_abx, &cpu_mos6502::Op_DEC};
 
-    instruction_[0xCA] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_DEX};
+    instruction_[0xCA] = {&cpu_mos6502::addr_imp, &cpu_mos6502::Op_DEX};
 
-    instruction_[0x88] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_DEY};
+    instruction_[0x88] = {&cpu_mos6502::addr_imp, &cpu_mos6502::Op_DEY};
 
-    instruction_[0x49] = {&cpu_mos6502::Addr_IMM, &cpu_mos6502::Op_EOR};
-    instruction_[0x4D] = {&cpu_mos6502::Addr_ABS, &cpu_mos6502::Op_EOR};
-    instruction_[0x45] = {&cpu_mos6502::Addr_ZER, &cpu_mos6502::Op_EOR};
-    instruction_[0x41] = {&cpu_mos6502::Addr_INX, &cpu_mos6502::Op_EOR};
-    instruction_[0x51] = {&cpu_mos6502::Addr_INY, &cpu_mos6502::Op_EOR};
-    instruction_[0x55] = {&cpu_mos6502::Addr_ZEX, &cpu_mos6502::Op_EOR};
-    instruction_[0x5D] = {&cpu_mos6502::Addr_ABX, &cpu_mos6502::Op_EOR};
-    instruction_[0x59] = {&cpu_mos6502::Addr_ABY, &cpu_mos6502::Op_EOR};
+    instruction_[0x49] = {&cpu_mos6502::addr_imm, &cpu_mos6502::Op_EOR};
+    instruction_[0x4D] = {&cpu_mos6502::addr_abs, &cpu_mos6502::Op_EOR};
+    instruction_[0x45] = {&cpu_mos6502::addr_zer, &cpu_mos6502::Op_EOR};
+    instruction_[0x41] = {&cpu_mos6502::addr_inx, &cpu_mos6502::Op_EOR};
+    instruction_[0x51] = {&cpu_mos6502::addr_iny, &cpu_mos6502::Op_EOR};
+    instruction_[0x55] = {&cpu_mos6502::addr_zex, &cpu_mos6502::Op_EOR};
+    instruction_[0x5D] = {&cpu_mos6502::addr_abx, &cpu_mos6502::Op_EOR};
+    instruction_[0x59] = {&cpu_mos6502::addr_aby, &cpu_mos6502::Op_EOR};
 
-    instruction_[0xEE] = {&cpu_mos6502::Addr_ABS, &cpu_mos6502::Op_INC};
-    instruction_[0xE6] = {&cpu_mos6502::Addr_ZER, &cpu_mos6502::Op_INC};
-    instruction_[0xF6] = {&cpu_mos6502::Addr_ZEX, &cpu_mos6502::Op_INC};
-    instruction_[0xFE] = {&cpu_mos6502::Addr_ABX, &cpu_mos6502::Op_INC};
+    instruction_[0xEE] = {&cpu_mos6502::addr_abs, &cpu_mos6502::Op_INC};
+    instruction_[0xE6] = {&cpu_mos6502::addr_zer, &cpu_mos6502::Op_INC};
+    instruction_[0xF6] = {&cpu_mos6502::addr_zex, &cpu_mos6502::Op_INC};
+    instruction_[0xFE] = {&cpu_mos6502::addr_abx, &cpu_mos6502::Op_INC};
 
-    instruction_[0xE8] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_INX};
+    instruction_[0xE8] = {&cpu_mos6502::addr_imp, &cpu_mos6502::Op_INX};
 
-    instruction_[0xC8] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_INY};
+    instruction_[0xC8] = {&cpu_mos6502::addr_imp, &cpu_mos6502::Op_INY};
 
-    instruction_[0x4C] = {&cpu_mos6502::Addr_ABS, &cpu_mos6502::Op_JMP};
-    instruction_[0x6C] = {&cpu_mos6502::Addr_ABI, &cpu_mos6502::Op_JMP};
+    instruction_[0x4C] = {&cpu_mos6502::addr_abs, &cpu_mos6502::Op_JMP};
+    instruction_[0x6C] = {&cpu_mos6502::addr_abi, &cpu_mos6502::Op_JMP};
 
-    instruction_[0x20] = {&cpu_mos6502::Addr_ABS, &cpu_mos6502::Op_JSR};
+    instruction_[0x20] = {&cpu_mos6502::addr_abs, &cpu_mos6502::Op_JSR};
 
-    instruction_[0xA9] = {&cpu_mos6502::Addr_IMM, &cpu_mos6502::Op_LDA};
-    instruction_[0xAD] = {&cpu_mos6502::Addr_ABS, &cpu_mos6502::Op_LDA};
-    instruction_[0xA5] = {&cpu_mos6502::Addr_ZER, &cpu_mos6502::Op_LDA};
-    instruction_[0xA1] = {&cpu_mos6502::Addr_INX, &cpu_mos6502::Op_LDA};
-    instruction_[0xB1] = {&cpu_mos6502::Addr_INY, &cpu_mos6502::Op_LDA};
-    instruction_[0xB5] = {&cpu_mos6502::Addr_ZEX, &cpu_mos6502::Op_LDA};
-    instruction_[0xBD] = {&cpu_mos6502::Addr_ABX, &cpu_mos6502::Op_LDA};
-    instruction_[0xB9] = {&cpu_mos6502::Addr_ABY, &cpu_mos6502::Op_LDA};
+    instruction_[0xA9] = {&cpu_mos6502::addr_imm, &cpu_mos6502::Op_LDA};
+    instruction_[0xAD] = {&cpu_mos6502::addr_abs, &cpu_mos6502::Op_LDA};
+    instruction_[0xA5] = {&cpu_mos6502::addr_zer, &cpu_mos6502::Op_LDA};
+    instruction_[0xA1] = {&cpu_mos6502::addr_inx, &cpu_mos6502::Op_LDA};
+    instruction_[0xB1] = {&cpu_mos6502::addr_iny, &cpu_mos6502::Op_LDA};
+    instruction_[0xB5] = {&cpu_mos6502::addr_zex, &cpu_mos6502::Op_LDA};
+    instruction_[0xBD] = {&cpu_mos6502::addr_abx, &cpu_mos6502::Op_LDA};
+    instruction_[0xB9] = {&cpu_mos6502::addr_aby, &cpu_mos6502::Op_LDA};
 
-    instruction_[0xA2] = {&cpu_mos6502::Addr_IMM, &cpu_mos6502::Op_LDX};
-    instruction_[0xAE] = {&cpu_mos6502::Addr_ABS, &cpu_mos6502::Op_LDX};
-    instruction_[0xA6] = {&cpu_mos6502::Addr_ZER, &cpu_mos6502::Op_LDX};
-    instruction_[0xBE] = {&cpu_mos6502::Addr_ABY, &cpu_mos6502::Op_LDX};
-    instruction_[0xB6] = {&cpu_mos6502::Addr_ZEY, &cpu_mos6502::Op_LDX};
+    instruction_[0xA2] = {&cpu_mos6502::addr_imm, &cpu_mos6502::Op_LDX};
+    instruction_[0xAE] = {&cpu_mos6502::addr_abs, &cpu_mos6502::Op_LDX};
+    instruction_[0xA6] = {&cpu_mos6502::addr_zer, &cpu_mos6502::Op_LDX};
+    instruction_[0xBE] = {&cpu_mos6502::addr_aby, &cpu_mos6502::Op_LDX};
+    instruction_[0xB6] = {&cpu_mos6502::addr_zey, &cpu_mos6502::Op_LDX};
 
-    instruction_[0xA0] = {&cpu_mos6502::Addr_IMM, &cpu_mos6502::Op_LDY};
-    instruction_[0xAC] = {&cpu_mos6502::Addr_ABS, &cpu_mos6502::Op_LDY};
-    instruction_[0xA4] = {&cpu_mos6502::Addr_ZER, &cpu_mos6502::Op_LDY};
-    instruction_[0xB4] = {&cpu_mos6502::Addr_ZEX, &cpu_mos6502::Op_LDY};
-    instruction_[0xBC] = {&cpu_mos6502::Addr_ABX, &cpu_mos6502::Op_LDY};
+    instruction_[0xA0] = {&cpu_mos6502::addr_imm, &cpu_mos6502::Op_LDY};
+    instruction_[0xAC] = {&cpu_mos6502::addr_abs, &cpu_mos6502::Op_LDY};
+    instruction_[0xA4] = {&cpu_mos6502::addr_zer, &cpu_mos6502::Op_LDY};
+    instruction_[0xB4] = {&cpu_mos6502::addr_zex, &cpu_mos6502::Op_LDY};
+    instruction_[0xBC] = {&cpu_mos6502::addr_abx, &cpu_mos6502::Op_LDY};
 
-    instruction_[0x4E] = {&cpu_mos6502::Addr_ABS, &cpu_mos6502::Op_LSR};
-    instruction_[0x46] = {&cpu_mos6502::Addr_ZER, &cpu_mos6502::Op_LSR};
-    instruction_[0x4A] = {&cpu_mos6502::Addr_ACC, &cpu_mos6502::Op_LSR_ACC};
-    instruction_[0x56] = {&cpu_mos6502::Addr_ZEX, &cpu_mos6502::Op_LSR};
-    instruction_[0x5E] = {&cpu_mos6502::Addr_ABX, &cpu_mos6502::Op_LSR};
+    instruction_[0x4E] = {&cpu_mos6502::addr_abs, &cpu_mos6502::Op_LSR};
+    instruction_[0x46] = {&cpu_mos6502::addr_zer, &cpu_mos6502::Op_LSR};
+    instruction_[0x4A] = {&cpu_mos6502::addr_acc, &cpu_mos6502::Op_LSR_ACC};
+    instruction_[0x56] = {&cpu_mos6502::addr_zex, &cpu_mos6502::Op_LSR};
+    instruction_[0x5E] = {&cpu_mos6502::addr_abx, &cpu_mos6502::Op_LSR};
 
-    instruction_[0xEA] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_NOP};
+    instruction_[0xEA] = {&cpu_mos6502::addr_imp, &cpu_mos6502::Op_NOP};
 
-    instruction_[0x09] = {&cpu_mos6502::Addr_IMM, &cpu_mos6502::Op_ORA};
-    instruction_[0x0D] = {&cpu_mos6502::Addr_ABS, &cpu_mos6502::Op_ORA};
-    instruction_[0x05] = {&cpu_mos6502::Addr_ZER, &cpu_mos6502::Op_ORA};
-    instruction_[0x01] = {&cpu_mos6502::Addr_INX, &cpu_mos6502::Op_ORA};
-    instruction_[0x11] = {&cpu_mos6502::Addr_INY, &cpu_mos6502::Op_ORA};
-    instruction_[0x15] = {&cpu_mos6502::Addr_ZEX, &cpu_mos6502::Op_ORA};
-    instruction_[0x1D] = {&cpu_mos6502::Addr_ABX, &cpu_mos6502::Op_ORA};
-    instruction_[0x19] = {&cpu_mos6502::Addr_ABY, &cpu_mos6502::Op_ORA};
+    instruction_[0x09] = {&cpu_mos6502::addr_imm, &cpu_mos6502::Op_ORA};
+    instruction_[0x0D] = {&cpu_mos6502::addr_abs, &cpu_mos6502::Op_ORA};
+    instruction_[0x05] = {&cpu_mos6502::addr_zer, &cpu_mos6502::Op_ORA};
+    instruction_[0x01] = {&cpu_mos6502::addr_inx, &cpu_mos6502::Op_ORA};
+    instruction_[0x11] = {&cpu_mos6502::addr_iny, &cpu_mos6502::Op_ORA};
+    instruction_[0x15] = {&cpu_mos6502::addr_zex, &cpu_mos6502::Op_ORA};
+    instruction_[0x1D] = {&cpu_mos6502::addr_abx, &cpu_mos6502::Op_ORA};
+    instruction_[0x19] = {&cpu_mos6502::addr_aby, &cpu_mos6502::Op_ORA};
 
-    instruction_[0x48] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_PHA};
+    instruction_[0x48] = {&cpu_mos6502::addr_imp, &cpu_mos6502::Op_PHA};
 
-    instruction_[0x08] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_PHP};
+    instruction_[0x08] = {&cpu_mos6502::addr_imp, &cpu_mos6502::Op_PHP};
 
-    instruction_[0x68] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_PLA};
+    instruction_[0x68] = {&cpu_mos6502::addr_imp, &cpu_mos6502::Op_PLA};
 
-    instruction_[0x28] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_PLP};
+    instruction_[0x28] = {&cpu_mos6502::addr_imp, &cpu_mos6502::Op_PLP};
 
-    instruction_[0x2E] = {&cpu_mos6502::Addr_ABS, &cpu_mos6502::Op_ROL};
-    instruction_[0x26] = {&cpu_mos6502::Addr_ZER, &cpu_mos6502::Op_ROL};
-    instruction_[0x2A] = {&cpu_mos6502::Addr_ACC, &cpu_mos6502::Op_ROL_ACC};
-    instruction_[0x36] = {&cpu_mos6502::Addr_ZEX, &cpu_mos6502::Op_ROL};
-    instruction_[0x3E] = {&cpu_mos6502::Addr_ABX, &cpu_mos6502::Op_ROL};
+    instruction_[0x2E] = {&cpu_mos6502::addr_abs, &cpu_mos6502::Op_ROL};
+    instruction_[0x26] = {&cpu_mos6502::addr_zer, &cpu_mos6502::Op_ROL};
+    instruction_[0x2A] = {&cpu_mos6502::addr_acc, &cpu_mos6502::Op_ROL_ACC};
+    instruction_[0x36] = {&cpu_mos6502::addr_zex, &cpu_mos6502::Op_ROL};
+    instruction_[0x3E] = {&cpu_mos6502::addr_abx, &cpu_mos6502::Op_ROL};
 
-    instruction_[0x6E] = {&cpu_mos6502::Addr_ABS, &cpu_mos6502::Op_ROR};
-    instruction_[0x66] = {&cpu_mos6502::Addr_ZER, &cpu_mos6502::Op_ROR};
-    instruction_[0x6A] = {&cpu_mos6502::Addr_ACC, &cpu_mos6502::Op_ROR_ACC};
-    instruction_[0x76] = {&cpu_mos6502::Addr_ZEX, &cpu_mos6502::Op_ROR};
-    instruction_[0x7E] = {&cpu_mos6502::Addr_ABX, &cpu_mos6502::Op_ROR};
+    instruction_[0x6E] = {&cpu_mos6502::addr_abs, &cpu_mos6502::Op_ROR};
+    instruction_[0x66] = {&cpu_mos6502::addr_zer, &cpu_mos6502::Op_ROR};
+    instruction_[0x6A] = {&cpu_mos6502::addr_acc, &cpu_mos6502::Op_ROR_ACC};
+    instruction_[0x76] = {&cpu_mos6502::addr_zex, &cpu_mos6502::Op_ROR};
+    instruction_[0x7E] = {&cpu_mos6502::addr_abx, &cpu_mos6502::Op_ROR};
 
-    instruction_[0x40] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_RTI};
+    instruction_[0x40] = {&cpu_mos6502::addr_imp, &cpu_mos6502::Op_RTI};
 
-    instruction_[0x60] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_RTS};
+    instruction_[0x60] = {&cpu_mos6502::addr_imp, &cpu_mos6502::Op_RTS};
 
-    instruction_[0xE9] = {&cpu_mos6502::Addr_IMM, &cpu_mos6502::Op_SBC};
-    instruction_[0xED] = {&cpu_mos6502::Addr_ABS, &cpu_mos6502::Op_SBC};
-    instruction_[0xE5] = {&cpu_mos6502::Addr_ZER, &cpu_mos6502::Op_SBC};
-    instruction_[0xE1] = {&cpu_mos6502::Addr_INX, &cpu_mos6502::Op_SBC};
-    instruction_[0xF1] = {&cpu_mos6502::Addr_INY, &cpu_mos6502::Op_SBC};
-    instruction_[0xF5] = {&cpu_mos6502::Addr_ZEX, &cpu_mos6502::Op_SBC};
-    instruction_[0xFD] = {&cpu_mos6502::Addr_ABX, &cpu_mos6502::Op_SBC};
-    instruction_[0xF9] = {&cpu_mos6502::Addr_ABY, &cpu_mos6502::Op_SBC};
+    instruction_[0xE9] = {&cpu_mos6502::addr_imm, &cpu_mos6502::Op_SBC};
+    instruction_[0xED] = {&cpu_mos6502::addr_abs, &cpu_mos6502::Op_SBC};
+    instruction_[0xE5] = {&cpu_mos6502::addr_zer, &cpu_mos6502::Op_SBC};
+    instruction_[0xE1] = {&cpu_mos6502::addr_inx, &cpu_mos6502::Op_SBC};
+    instruction_[0xF1] = {&cpu_mos6502::addr_iny, &cpu_mos6502::Op_SBC};
+    instruction_[0xF5] = {&cpu_mos6502::addr_zex, &cpu_mos6502::Op_SBC};
+    instruction_[0xFD] = {&cpu_mos6502::addr_abx, &cpu_mos6502::Op_SBC};
+    instruction_[0xF9] = {&cpu_mos6502::addr_aby, &cpu_mos6502::Op_SBC};
 
-    instruction_[0x38] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_SEC};
+    instruction_[0x38] = {&cpu_mos6502::addr_imp, &cpu_mos6502::Op_SEC};
 
-    instruction_[0xF8] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_SED};
+    instruction_[0xF8] = {&cpu_mos6502::addr_imp, &cpu_mos6502::Op_SED};
 
-    instruction_[0x78] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_SEI};
+    instruction_[0x78] = {&cpu_mos6502::addr_imp, &cpu_mos6502::Op_SEI};
 
-    instruction_[0x8D] = {&cpu_mos6502::Addr_ABS, &cpu_mos6502::Op_STA};
-    instruction_[0x85] = {&cpu_mos6502::Addr_ZER, &cpu_mos6502::Op_STA};
-    instruction_[0x81] = {&cpu_mos6502::Addr_INX, &cpu_mos6502::Op_STA};
-    instruction_[0x91] = {&cpu_mos6502::Addr_INY, &cpu_mos6502::Op_STA};
-    instruction_[0x95] = {&cpu_mos6502::Addr_ZEX, &cpu_mos6502::Op_STA};
-    instruction_[0x9D] = {&cpu_mos6502::Addr_ABX, &cpu_mos6502::Op_STA};
-    instruction_[0x99] = {&cpu_mos6502::Addr_ABY, &cpu_mos6502::Op_STA};
+    instruction_[0x8D] = {&cpu_mos6502::addr_abs, &cpu_mos6502::Op_STA};
+    instruction_[0x85] = {&cpu_mos6502::addr_zer, &cpu_mos6502::Op_STA};
+    instruction_[0x81] = {&cpu_mos6502::addr_inx, &cpu_mos6502::Op_STA};
+    instruction_[0x91] = {&cpu_mos6502::addr_iny, &cpu_mos6502::Op_STA};
+    instruction_[0x95] = {&cpu_mos6502::addr_zex, &cpu_mos6502::Op_STA};
+    instruction_[0x9D] = {&cpu_mos6502::addr_abx, &cpu_mos6502::Op_STA};
+    instruction_[0x99] = {&cpu_mos6502::addr_aby, &cpu_mos6502::Op_STA};
 
-    instruction_[0x8E] = {&cpu_mos6502::Addr_ABS, &cpu_mos6502::Op_STX};
-    instruction_[0x86] = {&cpu_mos6502::Addr_ZER, &cpu_mos6502::Op_STX};
-    instruction_[0x96] = {&cpu_mos6502::Addr_ZEY, &cpu_mos6502::Op_STX};
+    instruction_[0x8E] = {&cpu_mos6502::addr_abs, &cpu_mos6502::Op_STX};
+    instruction_[0x86] = {&cpu_mos6502::addr_zer, &cpu_mos6502::Op_STX};
+    instruction_[0x96] = {&cpu_mos6502::addr_zey, &cpu_mos6502::Op_STX};
 
-    instruction_[0x8C] = {&cpu_mos6502::Addr_ABS, &cpu_mos6502::Op_STY};
-    instruction_[0x84] = {&cpu_mos6502::Addr_ZER, &cpu_mos6502::Op_STY};
-    instruction_[0x94] = {&cpu_mos6502::Addr_ZEX, &cpu_mos6502::Op_STY};
+    instruction_[0x8C] = {&cpu_mos6502::addr_abs, &cpu_mos6502::Op_STY};
+    instruction_[0x84] = {&cpu_mos6502::addr_zer, &cpu_mos6502::Op_STY};
+    instruction_[0x94] = {&cpu_mos6502::addr_zex, &cpu_mos6502::Op_STY};
 
-    instruction_[0xAA] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_TAX};
+    instruction_[0xAA] = {&cpu_mos6502::addr_imp, &cpu_mos6502::Op_TAX};
 
-    instruction_[0xA8] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_TAY};
+    instruction_[0xA8] = {&cpu_mos6502::addr_imp, &cpu_mos6502::Op_TAY};
 
-    instruction_[0xBA] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_TSX};
+    instruction_[0xBA] = {&cpu_mos6502::addr_imp, &cpu_mos6502::Op_TSX};
 
-    instruction_[0x8A] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_TXA};
+    instruction_[0x8A] = {&cpu_mos6502::addr_imp, &cpu_mos6502::Op_TXA};
 
-    instruction_[0x9A] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_TXS};
+    instruction_[0x9A] = {&cpu_mos6502::addr_imp, &cpu_mos6502::Op_TXS};
 
-    instruction_[0x98] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_TYA};
+    instruction_[0x98] = {&cpu_mos6502::addr_imp, &cpu_mos6502::Op_TYA};
 }
 
 void cpu_mos6502::Op_ADC(uint16_t src)
