@@ -8,526 +8,220 @@ cpu_mos6502::cpu_mos6502(bus_read_func r, bus_write_func w)
 {
     Write = (bus_write_func)w;
     Read = (bus_read_func)r;
-    instruction instr;
 
     // fill jump table with ILLEGALs
-    instr.addr = &cpu_mos6502::Addr_IMP;
-    instr.code = &cpu_mos6502::Op_ILLEGAL;
-    for (int i = 0; i < 256; i++)
+    for (auto &i : InstrTable)
     {
-        InstrTable[i] = instr;
+        i = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_ILLEGAL};
     }
 
     // insert opcodes
+    InstrTable[0x69] = {&cpu_mos6502::Addr_IMM, &cpu_mos6502::Op_ADC};
+    InstrTable[0x6D] = {&cpu_mos6502::Addr_ABS, &cpu_mos6502::Op_ADC};
+    InstrTable[0x65] = {&cpu_mos6502::Addr_ZER, &cpu_mos6502::Op_ADC};
+    InstrTable[0x61] = {&cpu_mos6502::Addr_INX, &cpu_mos6502::Op_ADC};
+    InstrTable[0x71] = {&cpu_mos6502::Addr_INY, &cpu_mos6502::Op_ADC};
+    InstrTable[0x75] = {&cpu_mos6502::Addr_ZEX, &cpu_mos6502::Op_ADC};
+    InstrTable[0x7D] = {&cpu_mos6502::Addr_ABX, &cpu_mos6502::Op_ADC};
+    InstrTable[0x79] = {&cpu_mos6502::Addr_ABY, &cpu_mos6502::Op_ADC};
 
-    instr.addr = &cpu_mos6502::Addr_IMM;
-    instr.code = &cpu_mos6502::Op_ADC;
-    InstrTable[0x69] = instr;
-    instr.addr = &cpu_mos6502::Addr_ABS;
-    instr.code = &cpu_mos6502::Op_ADC;
-    InstrTable[0x6D] = instr;
-    instr.addr = &cpu_mos6502::Addr_ZER;
-    instr.code = &cpu_mos6502::Op_ADC;
-    InstrTable[0x65] = instr;
-    instr.addr = &cpu_mos6502::Addr_INX;
-    instr.code = &cpu_mos6502::Op_ADC;
-    InstrTable[0x61] = instr;
-    instr.addr = &cpu_mos6502::Addr_INY;
-    instr.code = &cpu_mos6502::Op_ADC;
-    InstrTable[0x71] = instr;
-    instr.addr = &cpu_mos6502::Addr_ZEX;
-    instr.code = &cpu_mos6502::Op_ADC;
-    InstrTable[0x75] = instr;
-    instr.addr = &cpu_mos6502::Addr_ABX;
-    instr.code = &cpu_mos6502::Op_ADC;
-    InstrTable[0x7D] = instr;
-    instr.addr = &cpu_mos6502::Addr_ABY;
-    instr.code = &cpu_mos6502::Op_ADC;
-    InstrTable[0x79] = instr;
+    InstrTable[0x29] = {&cpu_mos6502::Addr_IMM, &cpu_mos6502::Op_AND};
+    InstrTable[0x2D] = {&cpu_mos6502::Addr_ABS, &cpu_mos6502::Op_AND};
+    InstrTable[0x25] = {&cpu_mos6502::Addr_ZER, &cpu_mos6502::Op_AND};
+    InstrTable[0x21] = {&cpu_mos6502::Addr_INX, &cpu_mos6502::Op_AND};
+    InstrTable[0x31] = {&cpu_mos6502::Addr_INY, &cpu_mos6502::Op_AND};
+    InstrTable[0x35] = {&cpu_mos6502::Addr_ZEX, &cpu_mos6502::Op_AND};
+    InstrTable[0x3D] = {&cpu_mos6502::Addr_ABX, &cpu_mos6502::Op_AND};
+    InstrTable[0x39] = {&cpu_mos6502::Addr_ABY, &cpu_mos6502::Op_AND};
 
-    instr.addr = &cpu_mos6502::Addr_IMM;
-    instr.code = &cpu_mos6502::Op_AND;
-    InstrTable[0x29] = instr;
-    instr.addr = &cpu_mos6502::Addr_ABS;
-    instr.code = &cpu_mos6502::Op_AND;
-    InstrTable[0x2D] = instr;
-    instr.addr = &cpu_mos6502::Addr_ZER;
-    instr.code = &cpu_mos6502::Op_AND;
-    InstrTable[0x25] = instr;
-    instr.addr = &cpu_mos6502::Addr_INX;
-    instr.code = &cpu_mos6502::Op_AND;
-    InstrTable[0x21] = instr;
-    instr.addr = &cpu_mos6502::Addr_INY;
-    instr.code = &cpu_mos6502::Op_AND;
-    InstrTable[0x31] = instr;
-    instr.addr = &cpu_mos6502::Addr_ZEX;
-    instr.code = &cpu_mos6502::Op_AND;
-    InstrTable[0x35] = instr;
-    instr.addr = &cpu_mos6502::Addr_ABX;
-    instr.code = &cpu_mos6502::Op_AND;
-    InstrTable[0x3D] = instr;
-    instr.addr = &cpu_mos6502::Addr_ABY;
-    instr.code = &cpu_mos6502::Op_AND;
-    InstrTable[0x39] = instr;
+    InstrTable[0x0E] = {&cpu_mos6502::Addr_ABS, &cpu_mos6502::Op_ASL};
+    InstrTable[0x06] = {&cpu_mos6502::Addr_ZER, &cpu_mos6502::Op_ASL};
+    InstrTable[0x0A] = {&cpu_mos6502::Addr_ACC, &cpu_mos6502::Op_ASL_ACC};
+    InstrTable[0x16] = {&cpu_mos6502::Addr_ZEX, &cpu_mos6502::Op_ASL};
+    InstrTable[0x1E] = {&cpu_mos6502::Addr_ABX, &cpu_mos6502::Op_ASL};
 
-    instr.addr = &cpu_mos6502::Addr_ABS;
-    instr.code = &cpu_mos6502::Op_ASL;
-    InstrTable[0x0E] = instr;
-    instr.addr = &cpu_mos6502::Addr_ZER;
-    instr.code = &cpu_mos6502::Op_ASL;
-    InstrTable[0x06] = instr;
-    instr.addr = &cpu_mos6502::Addr_ACC;
-    instr.code = &cpu_mos6502::Op_ASL_ACC;
-    InstrTable[0x0A] = instr;
-    instr.addr = &cpu_mos6502::Addr_ZEX;
-    instr.code = &cpu_mos6502::Op_ASL;
-    InstrTable[0x16] = instr;
-    instr.addr = &cpu_mos6502::Addr_ABX;
-    instr.code = &cpu_mos6502::Op_ASL;
-    InstrTable[0x1E] = instr;
+    InstrTable[0x90] = {&cpu_mos6502::Addr_REL, &cpu_mos6502::Op_BCC};
 
-    instr.addr = &cpu_mos6502::Addr_REL;
-    instr.code = &cpu_mos6502::Op_BCC;
-    InstrTable[0x90] = instr;
+    InstrTable[0xB0] = {&cpu_mos6502::Addr_REL, &cpu_mos6502::Op_BCS};
 
-    instr.addr = &cpu_mos6502::Addr_REL;
-    instr.code = &cpu_mos6502::Op_BCS;
-    InstrTable[0xB0] = instr;
+    InstrTable[0xF0] = {&cpu_mos6502::Addr_REL, &cpu_mos6502::Op_BEQ};
 
-    instr.addr = &cpu_mos6502::Addr_REL;
-    instr.code = &cpu_mos6502::Op_BEQ;
-    InstrTable[0xF0] = instr;
+    InstrTable[0x2C] = {&cpu_mos6502::Addr_ABS, &cpu_mos6502::Op_BIT};
+    InstrTable[0x24] = {&cpu_mos6502::Addr_ZER, &cpu_mos6502::Op_BIT};
 
-    instr.addr = &cpu_mos6502::Addr_ABS;
-    instr.code = &cpu_mos6502::Op_BIT;
-    InstrTable[0x2C] = instr;
-    instr.addr = &cpu_mos6502::Addr_ZER;
-    instr.code = &cpu_mos6502::Op_BIT;
-    InstrTable[0x24] = instr;
+    InstrTable[0x30] = {&cpu_mos6502::Addr_REL, &cpu_mos6502::Op_BMI};
 
-    instr.addr = &cpu_mos6502::Addr_REL;
-    instr.code = &cpu_mos6502::Op_BMI;
-    InstrTable[0x30] = instr;
+    InstrTable[0xD0] = {&cpu_mos6502::Addr_REL, &cpu_mos6502::Op_BNE};
 
-    instr.addr = &cpu_mos6502::Addr_REL;
-    instr.code = &cpu_mos6502::Op_BNE;
-    InstrTable[0xD0] = instr;
+    InstrTable[0x10] = {&cpu_mos6502::Addr_REL, &cpu_mos6502::Op_BPL};
 
-    instr.addr = &cpu_mos6502::Addr_REL;
-    instr.code = &cpu_mos6502::Op_BPL;
-    InstrTable[0x10] = instr;
+    InstrTable[0x00] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_BRK};
 
-    instr.addr = &cpu_mos6502::Addr_IMP;
-    instr.code = &cpu_mos6502::Op_BRK;
-    InstrTable[0x00] = instr;
+    InstrTable[0x50] = {&cpu_mos6502::Addr_REL, &cpu_mos6502::Op_BVC};
 
-    instr.addr = &cpu_mos6502::Addr_REL;
-    instr.code = &cpu_mos6502::Op_BVC;
-    InstrTable[0x50] = instr;
+    InstrTable[0x70] = {&cpu_mos6502::Addr_REL, &cpu_mos6502::Op_BVS};
 
-    instr.addr = &cpu_mos6502::Addr_REL;
-    instr.code = &cpu_mos6502::Op_BVS;
-    InstrTable[0x70] = instr;
+    InstrTable[0x18] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_CLC};
 
-    instr.addr = &cpu_mos6502::Addr_IMP;
-    instr.code = &cpu_mos6502::Op_CLC;
-    InstrTable[0x18] = instr;
+    InstrTable[0xD8] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_CLD};
 
-    instr.addr = &cpu_mos6502::Addr_IMP;
-    instr.code = &cpu_mos6502::Op_CLD;
-    InstrTable[0xD8] = instr;
+    InstrTable[0x58] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_CLI};
 
-    instr.addr = &cpu_mos6502::Addr_IMP;
-    instr.code = &cpu_mos6502::Op_CLI;
-    InstrTable[0x58] = instr;
+    InstrTable[0xB8] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_CLV};
 
-    instr.addr = &cpu_mos6502::Addr_IMP;
-    instr.code = &cpu_mos6502::Op_CLV;
-    InstrTable[0xB8] = instr;
+    InstrTable[0xC9] = {&cpu_mos6502::Addr_IMM, &cpu_mos6502::Op_CMP};
+    InstrTable[0xCD] = {&cpu_mos6502::Addr_ABS, &cpu_mos6502::Op_CMP};
+    InstrTable[0xC5] = {&cpu_mos6502::Addr_ZER, &cpu_mos6502::Op_CMP};
+    InstrTable[0xC1] = {&cpu_mos6502::Addr_INX, &cpu_mos6502::Op_CMP};
+    InstrTable[0xD1] = {&cpu_mos6502::Addr_INY, &cpu_mos6502::Op_CMP};
+    InstrTable[0xD5] = {&cpu_mos6502::Addr_ZEX, &cpu_mos6502::Op_CMP};
+    InstrTable[0xDD] = {&cpu_mos6502::Addr_ABX, &cpu_mos6502::Op_CMP};
+    InstrTable[0xD9] = {&cpu_mos6502::Addr_ABY, &cpu_mos6502::Op_CMP};
 
-    instr.addr = &cpu_mos6502::Addr_IMM;
-    instr.code = &cpu_mos6502::Op_CMP;
-    InstrTable[0xC9] = instr;
-    instr.addr = &cpu_mos6502::Addr_ABS;
-    instr.code = &cpu_mos6502::Op_CMP;
-    InstrTable[0xCD] = instr;
-    instr.addr = &cpu_mos6502::Addr_ZER;
-    instr.code = &cpu_mos6502::Op_CMP;
-    InstrTable[0xC5] = instr;
-    instr.addr = &cpu_mos6502::Addr_INX;
-    instr.code = &cpu_mos6502::Op_CMP;
-    InstrTable[0xC1] = instr;
-    instr.addr = &cpu_mos6502::Addr_INY;
-    instr.code = &cpu_mos6502::Op_CMP;
-    InstrTable[0xD1] = instr;
-    instr.addr = &cpu_mos6502::Addr_ZEX;
-    instr.code = &cpu_mos6502::Op_CMP;
-    InstrTable[0xD5] = instr;
-    instr.addr = &cpu_mos6502::Addr_ABX;
-    instr.code = &cpu_mos6502::Op_CMP;
-    InstrTable[0xDD] = instr;
-    instr.addr = &cpu_mos6502::Addr_ABY;
-    instr.code = &cpu_mos6502::Op_CMP;
-    InstrTable[0xD9] = instr;
+    InstrTable[0xE0] = {&cpu_mos6502::Addr_IMM, &cpu_mos6502::Op_CPX};
+    InstrTable[0xEC] = {&cpu_mos6502::Addr_ABS, &cpu_mos6502::Op_CPX};
+    InstrTable[0xE4] = {&cpu_mos6502::Addr_ZER, &cpu_mos6502::Op_CPX};
 
-    instr.addr = &cpu_mos6502::Addr_IMM;
-    instr.code = &cpu_mos6502::Op_CPX;
-    InstrTable[0xE0] = instr;
-    instr.addr = &cpu_mos6502::Addr_ABS;
-    instr.code = &cpu_mos6502::Op_CPX;
-    InstrTable[0xEC] = instr;
-    instr.addr = &cpu_mos6502::Addr_ZER;
-    instr.code = &cpu_mos6502::Op_CPX;
-    InstrTable[0xE4] = instr;
+    InstrTable[0xC0] = {&cpu_mos6502::Addr_IMM, &cpu_mos6502::Op_CPY};
+    InstrTable[0xCC] = {&cpu_mos6502::Addr_ABS, &cpu_mos6502::Op_CPY};
+    InstrTable[0xC4] = {&cpu_mos6502::Addr_ZER, &cpu_mos6502::Op_CPY};
 
-    instr.addr = &cpu_mos6502::Addr_IMM;
-    instr.code = &cpu_mos6502::Op_CPY;
-    InstrTable[0xC0] = instr;
-    instr.addr = &cpu_mos6502::Addr_ABS;
-    instr.code = &cpu_mos6502::Op_CPY;
-    InstrTable[0xCC] = instr;
-    instr.addr = &cpu_mos6502::Addr_ZER;
-    instr.code = &cpu_mos6502::Op_CPY;
-    InstrTable[0xC4] = instr;
+    InstrTable[0xCE] = {&cpu_mos6502::Addr_ABS, &cpu_mos6502::Op_DEC};
+    InstrTable[0xC6] = {&cpu_mos6502::Addr_ZER, &cpu_mos6502::Op_DEC};
+    InstrTable[0xD6] = {&cpu_mos6502::Addr_ZEX, &cpu_mos6502::Op_DEC};
+    InstrTable[0xDE] = {&cpu_mos6502::Addr_ABX, &cpu_mos6502::Op_DEC};
 
-    instr.addr = &cpu_mos6502::Addr_ABS;
-    instr.code = &cpu_mos6502::Op_DEC;
-    InstrTable[0xCE] = instr;
-    instr.addr = &cpu_mos6502::Addr_ZER;
-    instr.code = &cpu_mos6502::Op_DEC;
-    InstrTable[0xC6] = instr;
-    instr.addr = &cpu_mos6502::Addr_ZEX;
-    instr.code = &cpu_mos6502::Op_DEC;
-    InstrTable[0xD6] = instr;
-    instr.addr = &cpu_mos6502::Addr_ABX;
-    instr.code = &cpu_mos6502::Op_DEC;
-    InstrTable[0xDE] = instr;
+    InstrTable[0xCA] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_DEX};
 
-    instr.addr = &cpu_mos6502::Addr_IMP;
-    instr.code = &cpu_mos6502::Op_DEX;
-    InstrTable[0xCA] = instr;
+    InstrTable[0x88] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_DEY};
 
-    instr.addr = &cpu_mos6502::Addr_IMP;
-    instr.code = &cpu_mos6502::Op_DEY;
-    InstrTable[0x88] = instr;
+    InstrTable[0x49] = {&cpu_mos6502::Addr_IMM, &cpu_mos6502::Op_EOR};
+    InstrTable[0x4D] = {&cpu_mos6502::Addr_ABS, &cpu_mos6502::Op_EOR};
+    InstrTable[0x45] = {&cpu_mos6502::Addr_ZER, &cpu_mos6502::Op_EOR};
+    InstrTable[0x41] = {&cpu_mos6502::Addr_INX, &cpu_mos6502::Op_EOR};
+    InstrTable[0x51] = {&cpu_mos6502::Addr_INY, &cpu_mos6502::Op_EOR};
+    InstrTable[0x55] = {&cpu_mos6502::Addr_ZEX, &cpu_mos6502::Op_EOR};
+    InstrTable[0x5D] = {&cpu_mos6502::Addr_ABX, &cpu_mos6502::Op_EOR};
+    InstrTable[0x59] = {&cpu_mos6502::Addr_ABY, &cpu_mos6502::Op_EOR};
 
-    instr.addr = &cpu_mos6502::Addr_IMM;
-    instr.code = &cpu_mos6502::Op_EOR;
-    InstrTable[0x49] = instr;
-    instr.addr = &cpu_mos6502::Addr_ABS;
-    instr.code = &cpu_mos6502::Op_EOR;
-    InstrTable[0x4D] = instr;
-    instr.addr = &cpu_mos6502::Addr_ZER;
-    instr.code = &cpu_mos6502::Op_EOR;
-    InstrTable[0x45] = instr;
-    instr.addr = &cpu_mos6502::Addr_INX;
-    instr.code = &cpu_mos6502::Op_EOR;
-    InstrTable[0x41] = instr;
-    instr.addr = &cpu_mos6502::Addr_INY;
-    instr.code = &cpu_mos6502::Op_EOR;
-    InstrTable[0x51] = instr;
-    instr.addr = &cpu_mos6502::Addr_ZEX;
-    instr.code = &cpu_mos6502::Op_EOR;
-    InstrTable[0x55] = instr;
-    instr.addr = &cpu_mos6502::Addr_ABX;
-    instr.code = &cpu_mos6502::Op_EOR;
-    InstrTable[0x5D] = instr;
-    instr.addr = &cpu_mos6502::Addr_ABY;
-    instr.code = &cpu_mos6502::Op_EOR;
-    InstrTable[0x59] = instr;
+    InstrTable[0xEE] = {&cpu_mos6502::Addr_ABS, &cpu_mos6502::Op_INC};
+    InstrTable[0xE6] = {&cpu_mos6502::Addr_ZER, &cpu_mos6502::Op_INC};
+    InstrTable[0xF6] = {&cpu_mos6502::Addr_ZEX, &cpu_mos6502::Op_INC};
+    InstrTable[0xFE] = {&cpu_mos6502::Addr_ABX, &cpu_mos6502::Op_INC};
 
-    instr.addr = &cpu_mos6502::Addr_ABS;
-    instr.code = &cpu_mos6502::Op_INC;
-    InstrTable[0xEE] = instr;
-    instr.addr = &cpu_mos6502::Addr_ZER;
-    instr.code = &cpu_mos6502::Op_INC;
-    InstrTable[0xE6] = instr;
-    instr.addr = &cpu_mos6502::Addr_ZEX;
-    instr.code = &cpu_mos6502::Op_INC;
-    InstrTable[0xF6] = instr;
-    instr.addr = &cpu_mos6502::Addr_ABX;
-    instr.code = &cpu_mos6502::Op_INC;
-    InstrTable[0xFE] = instr;
+    InstrTable[0xE8] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_INX};
 
-    instr.addr = &cpu_mos6502::Addr_IMP;
-    instr.code = &cpu_mos6502::Op_INX;
-    InstrTable[0xE8] = instr;
+    InstrTable[0xC8] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_INY};
 
-    instr.addr = &cpu_mos6502::Addr_IMP;
-    instr.code = &cpu_mos6502::Op_INY;
-    InstrTable[0xC8] = instr;
+    InstrTable[0x4C] = {&cpu_mos6502::Addr_ABS, &cpu_mos6502::Op_JMP};
+    InstrTable[0x6C] = {&cpu_mos6502::Addr_ABI, &cpu_mos6502::Op_JMP};
 
-    instr.addr = &cpu_mos6502::Addr_ABS;
-    instr.code = &cpu_mos6502::Op_JMP;
-    InstrTable[0x4C] = instr;
-    instr.addr = &cpu_mos6502::Addr_ABI;
-    instr.code = &cpu_mos6502::Op_JMP;
-    InstrTable[0x6C] = instr;
+    InstrTable[0x20] = {&cpu_mos6502::Addr_ABS, &cpu_mos6502::Op_JSR};
 
-    instr.addr = &cpu_mos6502::Addr_ABS;
-    instr.code = &cpu_mos6502::Op_JSR;
-    InstrTable[0x20] = instr;
+    InstrTable[0xA9] = {&cpu_mos6502::Addr_IMM, &cpu_mos6502::Op_LDA};
+    InstrTable[0xAD] = {&cpu_mos6502::Addr_ABS, &cpu_mos6502::Op_LDA};
+    InstrTable[0xA5] = {&cpu_mos6502::Addr_ZER, &cpu_mos6502::Op_LDA};
+    InstrTable[0xA1] = {&cpu_mos6502::Addr_INX, &cpu_mos6502::Op_LDA};
+    InstrTable[0xB1] = {&cpu_mos6502::Addr_INY, &cpu_mos6502::Op_LDA};
+    InstrTable[0xB5] = {&cpu_mos6502::Addr_ZEX, &cpu_mos6502::Op_LDA};
+    InstrTable[0xBD] = {&cpu_mos6502::Addr_ABX, &cpu_mos6502::Op_LDA};
+    InstrTable[0xB9] = {&cpu_mos6502::Addr_ABY, &cpu_mos6502::Op_LDA};
 
-    instr.addr = &cpu_mos6502::Addr_IMM;
-    instr.code = &cpu_mos6502::Op_LDA;
-    InstrTable[0xA9] = instr;
-    instr.addr = &cpu_mos6502::Addr_ABS;
-    instr.code = &cpu_mos6502::Op_LDA;
-    InstrTable[0xAD] = instr;
-    instr.addr = &cpu_mos6502::Addr_ZER;
-    instr.code = &cpu_mos6502::Op_LDA;
-    InstrTable[0xA5] = instr;
-    instr.addr = &cpu_mos6502::Addr_INX;
-    instr.code = &cpu_mos6502::Op_LDA;
-    InstrTable[0xA1] = instr;
-    instr.addr = &cpu_mos6502::Addr_INY;
-    instr.code = &cpu_mos6502::Op_LDA;
-    InstrTable[0xB1] = instr;
-    instr.addr = &cpu_mos6502::Addr_ZEX;
-    instr.code = &cpu_mos6502::Op_LDA;
-    InstrTable[0xB5] = instr;
-    instr.addr = &cpu_mos6502::Addr_ABX;
-    instr.code = &cpu_mos6502::Op_LDA;
-    InstrTable[0xBD] = instr;
-    instr.addr = &cpu_mos6502::Addr_ABY;
-    instr.code = &cpu_mos6502::Op_LDA;
-    InstrTable[0xB9] = instr;
+    InstrTable[0xA2] = {&cpu_mos6502::Addr_IMM, &cpu_mos6502::Op_LDX};
+    InstrTable[0xAE] = {&cpu_mos6502::Addr_ABS, &cpu_mos6502::Op_LDX};
+    InstrTable[0xA6] = {&cpu_mos6502::Addr_ZER, &cpu_mos6502::Op_LDX};
+    InstrTable[0xBE] = {&cpu_mos6502::Addr_ABY, &cpu_mos6502::Op_LDX};
+    InstrTable[0xB6] = {&cpu_mos6502::Addr_ZEY, &cpu_mos6502::Op_LDX};
 
-    instr.addr = &cpu_mos6502::Addr_IMM;
-    instr.code = &cpu_mos6502::Op_LDX;
-    InstrTable[0xA2] = instr;
-    instr.addr = &cpu_mos6502::Addr_ABS;
-    instr.code = &cpu_mos6502::Op_LDX;
-    InstrTable[0xAE] = instr;
-    instr.addr = &cpu_mos6502::Addr_ZER;
-    instr.code = &cpu_mos6502::Op_LDX;
-    InstrTable[0xA6] = instr;
-    instr.addr = &cpu_mos6502::Addr_ABY;
-    instr.code = &cpu_mos6502::Op_LDX;
-    InstrTable[0xBE] = instr;
-    instr.addr = &cpu_mos6502::Addr_ZEY;
-    instr.code = &cpu_mos6502::Op_LDX;
-    InstrTable[0xB6] = instr;
+    InstrTable[0xA0] = {&cpu_mos6502::Addr_IMM, &cpu_mos6502::Op_LDY};
+    InstrTable[0xAC] = {&cpu_mos6502::Addr_ABS, &cpu_mos6502::Op_LDY};
+    InstrTable[0xA4] = {&cpu_mos6502::Addr_ZER, &cpu_mos6502::Op_LDY};
+    InstrTable[0xB4] = {&cpu_mos6502::Addr_ZEX, &cpu_mos6502::Op_LDY};
+    InstrTable[0xBC] = {&cpu_mos6502::Addr_ABX, &cpu_mos6502::Op_LDY};
 
-    instr.addr = &cpu_mos6502::Addr_IMM;
-    instr.code = &cpu_mos6502::Op_LDY;
-    InstrTable[0xA0] = instr;
-    instr.addr = &cpu_mos6502::Addr_ABS;
-    instr.code = &cpu_mos6502::Op_LDY;
-    InstrTable[0xAC] = instr;
-    instr.addr = &cpu_mos6502::Addr_ZER;
-    instr.code = &cpu_mos6502::Op_LDY;
-    InstrTable[0xA4] = instr;
-    instr.addr = &cpu_mos6502::Addr_ZEX;
-    instr.code = &cpu_mos6502::Op_LDY;
-    InstrTable[0xB4] = instr;
-    instr.addr = &cpu_mos6502::Addr_ABX;
-    instr.code = &cpu_mos6502::Op_LDY;
-    InstrTable[0xBC] = instr;
+    InstrTable[0x4E] = {&cpu_mos6502::Addr_ABS, &cpu_mos6502::Op_LSR};
+    InstrTable[0x46] = {&cpu_mos6502::Addr_ZER, &cpu_mos6502::Op_LSR};
+    InstrTable[0x4A] = {&cpu_mos6502::Addr_ACC, &cpu_mos6502::Op_LSR_ACC};
+    InstrTable[0x56] = {&cpu_mos6502::Addr_ZEX, &cpu_mos6502::Op_LSR};
+    InstrTable[0x5E] = {&cpu_mos6502::Addr_ABX, &cpu_mos6502::Op_LSR};
 
-    instr.addr = &cpu_mos6502::Addr_ABS;
-    instr.code = &cpu_mos6502::Op_LSR;
-    InstrTable[0x4E] = instr;
-    instr.addr = &cpu_mos6502::Addr_ZER;
-    instr.code = &cpu_mos6502::Op_LSR;
-    InstrTable[0x46] = instr;
-    instr.addr = &cpu_mos6502::Addr_ACC;
-    instr.code = &cpu_mos6502::Op_LSR_ACC;
-    InstrTable[0x4A] = instr;
-    instr.addr = &cpu_mos6502::Addr_ZEX;
-    instr.code = &cpu_mos6502::Op_LSR;
-    InstrTable[0x56] = instr;
-    instr.addr = &cpu_mos6502::Addr_ABX;
-    instr.code = &cpu_mos6502::Op_LSR;
-    InstrTable[0x5E] = instr;
+    InstrTable[0xEA] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_NOP};
 
-    instr.addr = &cpu_mos6502::Addr_IMP;
-    instr.code = &cpu_mos6502::Op_NOP;
-    InstrTable[0xEA] = instr;
+    InstrTable[0x09] = {&cpu_mos6502::Addr_IMM, &cpu_mos6502::Op_ORA};
+    InstrTable[0x0D] = {&cpu_mos6502::Addr_ABS, &cpu_mos6502::Op_ORA};
+    InstrTable[0x05] = {&cpu_mos6502::Addr_ZER, &cpu_mos6502::Op_ORA};
+    InstrTable[0x01] = {&cpu_mos6502::Addr_INX, &cpu_mos6502::Op_ORA};
+    InstrTable[0x11] = {&cpu_mos6502::Addr_INY, &cpu_mos6502::Op_ORA};
+    InstrTable[0x15] = {&cpu_mos6502::Addr_ZEX, &cpu_mos6502::Op_ORA};
+    InstrTable[0x1D] = {&cpu_mos6502::Addr_ABX, &cpu_mos6502::Op_ORA};
+    InstrTable[0x19] = {&cpu_mos6502::Addr_ABY, &cpu_mos6502::Op_ORA};
 
-    instr.addr = &cpu_mos6502::Addr_IMM;
-    instr.code = &cpu_mos6502::Op_ORA;
-    InstrTable[0x09] = instr;
-    instr.addr = &cpu_mos6502::Addr_ABS;
-    instr.code = &cpu_mos6502::Op_ORA;
-    InstrTable[0x0D] = instr;
-    instr.addr = &cpu_mos6502::Addr_ZER;
-    instr.code = &cpu_mos6502::Op_ORA;
-    InstrTable[0x05] = instr;
-    instr.addr = &cpu_mos6502::Addr_INX;
-    instr.code = &cpu_mos6502::Op_ORA;
-    InstrTable[0x01] = instr;
-    instr.addr = &cpu_mos6502::Addr_INY;
-    instr.code = &cpu_mos6502::Op_ORA;
-    InstrTable[0x11] = instr;
-    instr.addr = &cpu_mos6502::Addr_ZEX;
-    instr.code = &cpu_mos6502::Op_ORA;
-    InstrTable[0x15] = instr;
-    instr.addr = &cpu_mos6502::Addr_ABX;
-    instr.code = &cpu_mos6502::Op_ORA;
-    InstrTable[0x1D] = instr;
-    instr.addr = &cpu_mos6502::Addr_ABY;
-    instr.code = &cpu_mos6502::Op_ORA;
-    InstrTable[0x19] = instr;
+    InstrTable[0x48] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_PHA};
 
-    instr.addr = &cpu_mos6502::Addr_IMP;
-    instr.code = &cpu_mos6502::Op_PHA;
-    InstrTable[0x48] = instr;
+    InstrTable[0x08] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_PHP};
 
-    instr.addr = &cpu_mos6502::Addr_IMP;
-    instr.code = &cpu_mos6502::Op_PHP;
-    InstrTable[0x08] = instr;
+    InstrTable[0x68] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_PLA};
 
-    instr.addr = &cpu_mos6502::Addr_IMP;
-    instr.code = &cpu_mos6502::Op_PLA;
-    InstrTable[0x68] = instr;
+    InstrTable[0x28] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_PLP};
 
-    instr.addr = &cpu_mos6502::Addr_IMP;
-    instr.code = &cpu_mos6502::Op_PLP;
-    InstrTable[0x28] = instr;
+    InstrTable[0x2E] = {&cpu_mos6502::Addr_ABS, &cpu_mos6502::Op_ROL};
+    InstrTable[0x26] = {&cpu_mos6502::Addr_ZER, &cpu_mos6502::Op_ROL};
+    InstrTable[0x2A] = {&cpu_mos6502::Addr_ACC, &cpu_mos6502::Op_ROL_ACC};
+    InstrTable[0x36] = {&cpu_mos6502::Addr_ZEX, &cpu_mos6502::Op_ROL};
+    InstrTable[0x3E] = {&cpu_mos6502::Addr_ABX, &cpu_mos6502::Op_ROL};
 
-    instr.addr = &cpu_mos6502::Addr_ABS;
-    instr.code = &cpu_mos6502::Op_ROL;
-    InstrTable[0x2E] = instr;
-    instr.addr = &cpu_mos6502::Addr_ZER;
-    instr.code = &cpu_mos6502::Op_ROL;
-    InstrTable[0x26] = instr;
-    instr.addr = &cpu_mos6502::Addr_ACC;
-    instr.code = &cpu_mos6502::Op_ROL_ACC;
-    InstrTable[0x2A] = instr;
-    instr.addr = &cpu_mos6502::Addr_ZEX;
-    instr.code = &cpu_mos6502::Op_ROL;
-    InstrTable[0x36] = instr;
-    instr.addr = &cpu_mos6502::Addr_ABX;
-    instr.code = &cpu_mos6502::Op_ROL;
-    InstrTable[0x3E] = instr;
+    InstrTable[0x6E] = {&cpu_mos6502::Addr_ABS, &cpu_mos6502::Op_ROR};
+    InstrTable[0x66] = {&cpu_mos6502::Addr_ZER, &cpu_mos6502::Op_ROR};
+    InstrTable[0x6A] = {&cpu_mos6502::Addr_ACC, &cpu_mos6502::Op_ROR_ACC};
+    InstrTable[0x76] = {&cpu_mos6502::Addr_ZEX, &cpu_mos6502::Op_ROR};
+    InstrTable[0x7E] = {&cpu_mos6502::Addr_ABX, &cpu_mos6502::Op_ROR};
 
-    instr.addr = &cpu_mos6502::Addr_ABS;
-    instr.code = &cpu_mos6502::Op_ROR;
-    InstrTable[0x6E] = instr;
-    instr.addr = &cpu_mos6502::Addr_ZER;
-    instr.code = &cpu_mos6502::Op_ROR;
-    InstrTable[0x66] = instr;
-    instr.addr = &cpu_mos6502::Addr_ACC;
-    instr.code = &cpu_mos6502::Op_ROR_ACC;
-    InstrTable[0x6A] = instr;
-    instr.addr = &cpu_mos6502::Addr_ZEX;
-    instr.code = &cpu_mos6502::Op_ROR;
-    InstrTable[0x76] = instr;
-    instr.addr = &cpu_mos6502::Addr_ABX;
-    instr.code = &cpu_mos6502::Op_ROR;
-    InstrTable[0x7E] = instr;
+    InstrTable[0x40] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_RTI};
 
-    instr.addr = &cpu_mos6502::Addr_IMP;
-    instr.code = &cpu_mos6502::Op_RTI;
-    InstrTable[0x40] = instr;
+    InstrTable[0x60] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_RTS};
 
-    instr.addr = &cpu_mos6502::Addr_IMP;
-    instr.code = &cpu_mos6502::Op_RTS;
-    InstrTable[0x60] = instr;
+    InstrTable[0xE9] = {&cpu_mos6502::Addr_IMM, &cpu_mos6502::Op_SBC};
+    InstrTable[0xED] = {&cpu_mos6502::Addr_ABS, &cpu_mos6502::Op_SBC};
+    InstrTable[0xE5] = {&cpu_mos6502::Addr_ZER, &cpu_mos6502::Op_SBC};
+    InstrTable[0xE1] = {&cpu_mos6502::Addr_INX, &cpu_mos6502::Op_SBC};
+    InstrTable[0xF1] = {&cpu_mos6502::Addr_INY, &cpu_mos6502::Op_SBC};
+    InstrTable[0xF5] = {&cpu_mos6502::Addr_ZEX, &cpu_mos6502::Op_SBC};
+    InstrTable[0xFD] = {&cpu_mos6502::Addr_ABX, &cpu_mos6502::Op_SBC};
+    InstrTable[0xF9] = {&cpu_mos6502::Addr_ABY, &cpu_mos6502::Op_SBC};
 
-    instr.addr = &cpu_mos6502::Addr_IMM;
-    instr.code = &cpu_mos6502::Op_SBC;
-    InstrTable[0xE9] = instr;
-    instr.addr = &cpu_mos6502::Addr_ABS;
-    instr.code = &cpu_mos6502::Op_SBC;
-    InstrTable[0xED] = instr;
-    instr.addr = &cpu_mos6502::Addr_ZER;
-    instr.code = &cpu_mos6502::Op_SBC;
-    InstrTable[0xE5] = instr;
-    instr.addr = &cpu_mos6502::Addr_INX;
-    instr.code = &cpu_mos6502::Op_SBC;
-    InstrTable[0xE1] = instr;
-    instr.addr = &cpu_mos6502::Addr_INY;
-    instr.code = &cpu_mos6502::Op_SBC;
-    InstrTable[0xF1] = instr;
-    instr.addr = &cpu_mos6502::Addr_ZEX;
-    instr.code = &cpu_mos6502::Op_SBC;
-    InstrTable[0xF5] = instr;
-    instr.addr = &cpu_mos6502::Addr_ABX;
-    instr.code = &cpu_mos6502::Op_SBC;
-    InstrTable[0xFD] = instr;
-    instr.addr = &cpu_mos6502::Addr_ABY;
-    instr.code = &cpu_mos6502::Op_SBC;
-    InstrTable[0xF9] = instr;
+    InstrTable[0x38] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_SEC};
 
-    instr.addr = &cpu_mos6502::Addr_IMP;
-    instr.code = &cpu_mos6502::Op_SEC;
-    InstrTable[0x38] = instr;
+    InstrTable[0xF8] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_SED};
 
-    instr.addr = &cpu_mos6502::Addr_IMP;
-    instr.code = &cpu_mos6502::Op_SED;
-    InstrTable[0xF8] = instr;
+    InstrTable[0x78] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_SEI};
 
-    instr.addr = &cpu_mos6502::Addr_IMP;
-    instr.code = &cpu_mos6502::Op_SEI;
-    InstrTable[0x78] = instr;
+    InstrTable[0x8D] = {&cpu_mos6502::Addr_ABS, &cpu_mos6502::Op_STA};
+    InstrTable[0x85] = {&cpu_mos6502::Addr_ZER, &cpu_mos6502::Op_STA};
+    InstrTable[0x81] = {&cpu_mos6502::Addr_INX, &cpu_mos6502::Op_STA};
+    InstrTable[0x91] = {&cpu_mos6502::Addr_INY, &cpu_mos6502::Op_STA};
+    InstrTable[0x95] = {&cpu_mos6502::Addr_ZEX, &cpu_mos6502::Op_STA};
+    InstrTable[0x9D] = {&cpu_mos6502::Addr_ABX, &cpu_mos6502::Op_STA};
+    InstrTable[0x99] = {&cpu_mos6502::Addr_ABY, &cpu_mos6502::Op_STA};
 
-    instr.addr = &cpu_mos6502::Addr_ABS;
-    instr.code = &cpu_mos6502::Op_STA;
-    InstrTable[0x8D] = instr;
-    instr.addr = &cpu_mos6502::Addr_ZER;
-    instr.code = &cpu_mos6502::Op_STA;
-    InstrTable[0x85] = instr;
-    instr.addr = &cpu_mos6502::Addr_INX;
-    instr.code = &cpu_mos6502::Op_STA;
-    InstrTable[0x81] = instr;
-    instr.addr = &cpu_mos6502::Addr_INY;
-    instr.code = &cpu_mos6502::Op_STA;
-    InstrTable[0x91] = instr;
-    instr.addr = &cpu_mos6502::Addr_ZEX;
-    instr.code = &cpu_mos6502::Op_STA;
-    InstrTable[0x95] = instr;
-    instr.addr = &cpu_mos6502::Addr_ABX;
-    instr.code = &cpu_mos6502::Op_STA;
-    InstrTable[0x9D] = instr;
-    instr.addr = &cpu_mos6502::Addr_ABY;
-    instr.code = &cpu_mos6502::Op_STA;
-    InstrTable[0x99] = instr;
+    InstrTable[0x8E] = {&cpu_mos6502::Addr_ABS, &cpu_mos6502::Op_STX};
+    InstrTable[0x86] = {&cpu_mos6502::Addr_ZER, &cpu_mos6502::Op_STX};
+    InstrTable[0x96] = {&cpu_mos6502::Addr_ZEY, &cpu_mos6502::Op_STX};
 
-    instr.addr = &cpu_mos6502::Addr_ABS;
-    instr.code = &cpu_mos6502::Op_STX;
-    InstrTable[0x8E] = instr;
-    instr.addr = &cpu_mos6502::Addr_ZER;
-    instr.code = &cpu_mos6502::Op_STX;
-    InstrTable[0x86] = instr;
-    instr.addr = &cpu_mos6502::Addr_ZEY;
-    instr.code = &cpu_mos6502::Op_STX;
-    InstrTable[0x96] = instr;
+    InstrTable[0x8C] = {&cpu_mos6502::Addr_ABS, &cpu_mos6502::Op_STY};
+    InstrTable[0x84] = {&cpu_mos6502::Addr_ZER, &cpu_mos6502::Op_STY};
+    InstrTable[0x94] = {&cpu_mos6502::Addr_ZEX, &cpu_mos6502::Op_STY};
 
-    instr.addr = &cpu_mos6502::Addr_ABS;
-    instr.code = &cpu_mos6502::Op_STY;
-    InstrTable[0x8C] = instr;
-    instr.addr = &cpu_mos6502::Addr_ZER;
-    instr.code = &cpu_mos6502::Op_STY;
-    InstrTable[0x84] = instr;
-    instr.addr = &cpu_mos6502::Addr_ZEX;
-    instr.code = &cpu_mos6502::Op_STY;
-    InstrTable[0x94] = instr;
+    InstrTable[0xAA] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_TAX};
 
-    instr.addr = &cpu_mos6502::Addr_IMP;
-    instr.code = &cpu_mos6502::Op_TAX;
-    InstrTable[0xAA] = instr;
+    InstrTable[0xA8] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_TAY};
 
-    instr.addr = &cpu_mos6502::Addr_IMP;
-    instr.code = &cpu_mos6502::Op_TAY;
-    InstrTable[0xA8] = instr;
+    InstrTable[0xBA] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_TSX};
 
-    instr.addr = &cpu_mos6502::Addr_IMP;
-    instr.code = &cpu_mos6502::Op_TSX;
-    InstrTable[0xBA] = instr;
+    InstrTable[0x8A] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_TXA};
 
-    instr.addr = &cpu_mos6502::Addr_IMP;
-    instr.code = &cpu_mos6502::Op_TXA;
-    InstrTable[0x8A] = instr;
+    InstrTable[0x9A] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_TXS};
 
-    instr.addr = &cpu_mos6502::Addr_IMP;
-    instr.code = &cpu_mos6502::Op_TXS;
-    InstrTable[0x9A] = instr;
-
-    instr.addr = &cpu_mos6502::Addr_IMP;
-    instr.code = &cpu_mos6502::Op_TYA;
-    InstrTable[0x98] = instr;
+    InstrTable[0x98] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_TYA};
 
     Reset();
 }
