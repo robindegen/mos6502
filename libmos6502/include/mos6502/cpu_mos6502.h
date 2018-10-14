@@ -30,10 +30,10 @@ public:
     cpu_mos6502(const cpu_mos6502 &) noexcept = delete;
     auto operator=(const cpu_mos6502 &) noexcept -> cpu_mos6502 & = delete;
 
-    void nmi();
-    void irq();
-    void reset();
-    void run(const std::uint32_t n);
+    void nmi() noexcept;
+    void irq() noexcept;
+    void reset() noexcept;
+    void run(const std::uint32_t n) noexcept;
 
     auto is_illegal_opcode_set() const noexcept -> bool;
 
@@ -47,7 +47,7 @@ private:
         opcode_exec_func code;
     };
 
-    void exec(const instruction i);
+    void exec(const instruction i) noexcept;
 
     // addressing modes
     auto addr_acc() noexcept -> std::uint16_t; // ACCUMULATOR
@@ -138,8 +138,8 @@ private:
 
     void op_illegal(std::uint16_t src) noexcept;
 
-    void initialize_illegal_opcodes();
-    void initialize_opcodes();
+    void initialize_illegal_opcodes() noexcept;
+    void initialize_opcodes() noexcept;
 
     // stack operations
     void stack_push(std::uint8_t byte) noexcept;

@@ -103,7 +103,7 @@ auto cpu_mos6502::addr_iny() noexcept -> std::uint16_t
     return bus_read_func_(zero_l) + (bus_read_func_(zero_h) << 8) + Y;
 }
 
-void cpu_mos6502::reset()
+void cpu_mos6502::reset() noexcept
 {
     A = 0x00;
     Y = 0x00;
@@ -140,7 +140,7 @@ auto cpu_mos6502::stack_pop() noexcept -> std::uint8_t
     return bus_read_func_(0x0100 + sp);
 }
 
-void cpu_mos6502::irq()
+void cpu_mos6502::irq() noexcept
 {
     if (!status::is_interrupt_flag_set(status))
     {
@@ -153,7 +153,7 @@ void cpu_mos6502::irq()
     }
 }
 
-void cpu_mos6502::nmi()
+void cpu_mos6502::nmi() noexcept
 {
     status::set_break(status, 0);
     stack_push((pc >> 8) & 0xFF);
@@ -163,7 +163,7 @@ void cpu_mos6502::nmi()
     pc = (bus_read_func_(nmi_vector_h) << 8) + bus_read_func_(nmi_vector_l);
 }
 
-void cpu_mos6502::run(const std::uint32_t n)
+void cpu_mos6502::run(const std::uint32_t n) noexcept
 {
     const auto start = cycles_;
 
@@ -187,7 +187,7 @@ auto cpu_mos6502::is_illegal_opcode_set() const noexcept -> bool
     return illegal_opcode_;
 }
 
-void cpu_mos6502::exec(const instruction i)
+void cpu_mos6502::exec(const instruction i) noexcept
 {
     const auto src = std::invoke(i.addr, *this);
     std::invoke(i.code, *this, src);
@@ -198,7 +198,7 @@ void cpu_mos6502::op_illegal(std::uint16_t src) noexcept
     illegal_opcode_ = true;
 }
 
-void cpu_mos6502::initialize_illegal_opcodes()
+void cpu_mos6502::initialize_illegal_opcodes() noexcept
 {
     for (auto &i : instruction_)
     {
@@ -206,7 +206,7 @@ void cpu_mos6502::initialize_illegal_opcodes()
     }
 }
 
-void cpu_mos6502::initialize_opcodes()
+void cpu_mos6502::initialize_opcodes() noexcept
 {
     instruction_[0x69] = {&cpu_mos6502::addr_imm, &cpu_mos6502::op_adc};
     instruction_[0x6D] = {&cpu_mos6502::addr_abs, &cpu_mos6502::op_adc};
