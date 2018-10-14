@@ -140,8 +140,8 @@ private:
     void initialize_opcodes();
 
     // stack operations
-    void StackPush(uint8_t byte);
-    uint8_t StackPop();
+    void stack_push(std::uint8_t byte) noexcept;
+    auto stack_pop() noexcept -> std::uint8_t;
 
     // IRQ, reset, NMI vectors
     static const uint16_t irqVectorH = 0xFFFF;

@@ -120,21 +120,23 @@ void cpu_mos6502::reset()
     illegalOpcode = false;
 }
 
-void cpu_mos6502::StackPush(uint8_t byte)
+void cpu_mos6502::stack_push(std::uint8_t byte) noexcept
 {
     bus_write_func_(0x0100 + sp, byte);
+
     if (sp == 0x00)
         sp = 0xFF;
     else
         sp--;
 }
 
-uint8_t cpu_mos6502::StackPop()
+auto cpu_mos6502::stack_pop() noexcept -> std::uint8_t
 {
     if (sp == 0xFF)
         sp = 0x00;
     else
         sp++;
+
     return bus_read_func_(0x0100 + sp);
 }
 
@@ -143,9 +145,9 @@ void cpu_mos6502::irq()
     if (!status::is_interrupt_flag_set(status))
     {
         status::set_break(status, 0);
-        StackPush((pc >> 8) & 0xFF);
-        StackPush(pc & 0xFF);
-        StackPush(status);
+        stack_push((pc >> 8) & 0xFF);
+        stack_push(pc & 0xFF);
+        stack_push(status);
         status::set_interrupt(status, 1);
         pc = (bus_read_func_(irqVectorH) << 8) + bus_read_func_(irqVectorL);
     }
@@ -154,9 +156,9 @@ void cpu_mos6502::irq()
 void cpu_mos6502::nmi()
 {
     status::set_break(status, 0);
-    StackPush((pc >> 8) & 0xFF);
-    StackPush(pc & 0xFF);
-    StackPush(status);
+    stack_push((pc >> 8) & 0xFF);
+    stack_push(pc & 0xFF);
+    stack_push(status);
     status::set_interrupt(status, 1);
     pc = (bus_read_func_(nmiVectorH) << 8) + bus_read_func_(nmiVectorL);
 }
@@ -527,9 +529,9 @@ void cpu_mos6502::Op_BPL(uint16_t src)
 void cpu_mos6502::Op_BRK(uint16_t src)
 {
     pc++;
-    StackPush((pc >> 8) & 0xFF);
-    StackPush(pc & 0xFF);
-    StackPush(status | status::break_flag);
+    stack_push((pc >> 8) & 0xFF);
+    stack_push(pc & 0xFF);
+    stack_push(status | status::break_flag);
     status::set_interrupt(status, 1);
     pc = (bus_read_func_(irqVectorH) << 8) + bus_read_func_(irqVectorL);
 }
@@ -665,8 +667,8 @@ void cpu_mos6502::Op_JMP(uint16_t src)
 void cpu_mos6502::Op_JSR(uint16_t src)
 {
     pc--;
-    StackPush((pc >> 8) & 0xFF);
-    StackPush(pc & 0xFF);
+    stack_push((pc >> 8) & 0xFF);
+    stack_push(pc & 0xFF);
     pc = src;
 }
 
@@ -729,24 +731,24 @@ void cpu_mos6502::Op_ORA(uint16_t src)
 
 void cpu_mos6502::Op_PHA(uint16_t src)
 {
-    StackPush(A);
+    stack_push(A);
 }
 
 void cpu_mos6502::Op_PHP(uint16_t src)
 {
-    StackPush(status | status::break_flag);
+    stack_push(status | status::break_flag);
 }
 
 void cpu_mos6502::Op_PLA(uint16_t src)
 {
-    A = StackPop();
+    A = stack_pop();
     status::set_negative(status, A & 0x80);
     status::set_zero(status, !A);
 }
 
 void cpu_mos6502::Op_PLP(uint16_t src)
 {
-    status = StackPop();
+    status = stack_pop();
     status::set_constant(status, 1);
 }
 
@@ -804,16 +806,16 @@ void cpu_mos6502::Op_ROR_ACC(uint16_t src)
 
 void cpu_mos6502::Op_RTI(uint16_t src)
 {
-    status = StackPop();
-    const auto lo = StackPop();
-    const auto hi = StackPop();
+    status = stack_pop();
+    const auto lo = stack_pop();
+    const auto hi = stack_pop();
     pc = (hi << 8) | lo;
 }
 
 void cpu_mos6502::Op_RTS(uint16_t src)
 {
-    const auto lo = StackPop();
-    const auto hi = StackPop();
+    const auto lo = stack_pop();
+    const auto hi = stack_pop();
     pc = ((hi << 8) | lo) + 1;
 }
 
