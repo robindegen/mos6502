@@ -151,7 +151,7 @@ private:
     static const uint16_t nmiVectorH = 0xFFFB;
     static const uint16_t nmiVectorL = 0xFFFA;
 
-    std::array<instruction, 256> InstrTable;
+    std::array<instruction, 256> instruction_;
 
     bool illegalOpcode{};
 
