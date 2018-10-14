@@ -4,11 +4,10 @@
 namespace mos6502
 {
 
-cpu_mos6502::cpu_mos6502(bus_read_func r, bus_write_func w)
+cpu_mos6502::cpu_mos6502(const bus_read_func read_func, const bus_write_func write_func)
+    : bus_read_func_{read_func}
+    , bus_write_func_{write_func}
 {
-    Write = (bus_write_func)w;
-    Read = (bus_read_func)r;
-
     // fill jump table with ILLEGALs
     for (auto &i : InstrTable)
     {
@@ -242,8 +241,8 @@ uint16_t cpu_mos6502::Addr_ABS()
     uint16_t addrH;
     uint16_t addr;
 
-    addrL = Read(pc++);
-    addrH = Read(pc++);
+    addrL = bus_read_func_(pc++);
+    addrH = bus_read_func_(pc++);
 
     addr = addrL + (addrH << 8);
 
@@ -252,7 +251,7 @@ uint16_t cpu_mos6502::Addr_ABS()
 
 uint16_t cpu_mos6502::Addr_ZER()
 {
-    return Read(pc++);
+    return bus_read_func_(pc++);
 }
 
 uint16_t cpu_mos6502::Addr_IMP()
@@ -265,7 +264,7 @@ uint16_t cpu_mos6502::Addr_REL()
     uint16_t offset;
     uint16_t addr;
 
-    offset = (uint16_t)Read(pc++);
+    offset = (uint16_t)bus_read_func_(pc++);
     if (offset & 0x80)
         offset |= 0xFF00;
     addr = pc + (int16_t)offset;
@@ -281,13 +280,13 @@ uint16_t cpu_mos6502::Addr_ABI()
     uint16_t abs;
     uint16_t addr;
 
-    addrL = Read(pc++);
-    addrH = Read(pc++);
+    addrL = bus_read_func_(pc++);
+    addrH = bus_read_func_(pc++);
 
     abs = (addrH << 8) | addrL;
 
-    effL = Read(abs);
-    effH = Read((abs & 0xFF00) + ((abs + 1) & 0x00FF));
+    effL = bus_read_func_(abs);
+    effH = bus_read_func_((abs & 0xFF00) + ((abs + 1) & 0x00FF));
 
     addr = effL + 0x100 * effH;
 
@@ -296,13 +295,13 @@ uint16_t cpu_mos6502::Addr_ABI()
 
 uint16_t cpu_mos6502::Addr_ZEX()
 {
-    uint16_t addr = (Read(pc++) + X) % 256;
+    uint16_t addr = (bus_read_func_(pc++) + X) % 256;
     return addr;
 }
 
 uint16_t cpu_mos6502::Addr_ZEY()
 {
-    uint16_t addr = (Read(pc++) + Y) % 256;
+    uint16_t addr = (bus_read_func_(pc++) + Y) % 256;
     return addr;
 }
 
@@ -312,8 +311,8 @@ uint16_t cpu_mos6502::Addr_ABX()
     uint16_t addrL;
     uint16_t addrH;
 
-    addrL = Read(pc++);
-    addrH = Read(pc++);
+    addrL = bus_read_func_(pc++);
+    addrH = bus_read_func_(pc++);
 
     addr = addrL + (addrH << 8) + X;
     return addr;
@@ -325,8 +324,8 @@ uint16_t cpu_mos6502::Addr_ABY()
     uint16_t addrL;
     uint16_t addrH;
 
-    addrL = Read(pc++);
-    addrH = Read(pc++);
+    addrL = bus_read_func_(pc++);
+    addrH = bus_read_func_(pc++);
 
     addr = addrL + (addrH << 8) + Y;
     return addr;
@@ -338,9 +337,9 @@ uint16_t cpu_mos6502::Addr_INX()
     uint16_t zeroH;
     uint16_t addr;
 
-    zeroL = (Read(pc++) + X) % 256;
+    zeroL = (bus_read_func_(pc++) + X) % 256;
     zeroH = (zeroL + 1) % 256;
-    addr = Read(zeroL) + (Read(zeroH) << 8);
+    addr = bus_read_func_(zeroL) + (bus_read_func_(zeroH) << 8);
 
     return addr;
 }
@@ -351,9 +350,9 @@ uint16_t cpu_mos6502::Addr_INY()
     uint16_t zeroH;
     uint16_t addr;
 
-    zeroL = Read(pc++);
+    zeroL = bus_read_func_(pc++);
     zeroH = (zeroL + 1) % 256;
-    addr = Read(zeroL) + (Read(zeroH) << 8) + Y;
+    addr = bus_read_func_(zeroL) + (bus_read_func_(zeroH) << 8) + Y;
 
     return addr;
 }
@@ -364,7 +363,7 @@ void cpu_mos6502::Reset()
     Y = 0x00;
     X = 0x00;
 
-    pc = (Read(rstVectorH) << 8) + Read(rstVectorL); // load PC from reset vector
+    pc = (bus_read_func_(rstVectorH) << 8) + bus_read_func_(rstVectorL); // load PC from reset vector
 
     sp = 0xFD;
 
@@ -377,7 +376,7 @@ void cpu_mos6502::Reset()
 
 void cpu_mos6502::StackPush(uint8_t byte)
 {
-    Write(0x0100 + sp, byte);
+    bus_write_func_(0x0100 + sp, byte);
     if (sp == 0x00)
         sp = 0xFF;
     else
@@ -390,7 +389,7 @@ uint8_t cpu_mos6502::StackPop()
         sp = 0x00;
     else
         sp++;
-    return Read(0x0100 + sp);
+    return bus_read_func_(0x0100 + sp);
 }
 
 void cpu_mos6502::IRQ()
@@ -402,7 +401,7 @@ void cpu_mos6502::IRQ()
         StackPush(pc & 0xFF);
         StackPush(status);
         status::set_interrupt(status, 1);
-        pc = (Read(irqVectorH) << 8) + Read(irqVectorL);
+        pc = (bus_read_func_(irqVectorH) << 8) + bus_read_func_(irqVectorL);
     }
 }
 
@@ -413,7 +412,7 @@ void cpu_mos6502::NMI()
     StackPush(pc & 0xFF);
     StackPush(status);
     status::set_interrupt(status, 1);
-    pc = (Read(nmiVectorH) << 8) + Read(nmiVectorL);
+    pc = (bus_read_func_(nmiVectorH) << 8) + bus_read_func_(nmiVectorL);
 }
 
 void cpu_mos6502::Run(uint32_t n)
@@ -425,7 +424,7 @@ void cpu_mos6502::Run(uint32_t n)
     while (start + n > cycles && !illegalOpcode)
     {
         // fetch
-        opcode = Read(pc++);
+        opcode = bus_read_func_(pc++);
 
         // decode
         instr = InstrTable[opcode];
@@ -450,7 +449,7 @@ void cpu_mos6502::Op_ILLEGAL(uint16_t src)
 
 void cpu_mos6502::Op_ADC(uint16_t src)
 {
-    uint8_t m = Read(src);
+    uint8_t m = bus_read_func_(src);
     unsigned int tmp = m + A + (status::is_carry_flag_set(status) ? 1 : 0);
     status::set_zero(status, !(tmp & 0xFF));
     if (status::is_decimal_flag_set(status))
@@ -477,7 +476,7 @@ void cpu_mos6502::Op_ADC(uint16_t src)
 
 void cpu_mos6502::Op_AND(uint16_t src)
 {
-    uint8_t m = Read(src);
+    uint8_t m = bus_read_func_(src);
     uint8_t res = m & A;
     status::set_negative(status, res & 0x80);
     status::set_zero(status, !res);
@@ -486,13 +485,13 @@ void cpu_mos6502::Op_AND(uint16_t src)
 
 void cpu_mos6502::Op_ASL(uint16_t src)
 {
-    uint8_t m = Read(src);
+    uint8_t m = bus_read_func_(src);
     status::set_carry(status, m & 0x80);
     m <<= 1;
     m &= 0xFF;
     status::set_negative(status, m & 0x80);
     status::set_zero(status, !m);
-    Write(src, m);
+    bus_write_func_(src, m);
 }
 
 void cpu_mos6502::Op_ASL_ACC(uint16_t src)
@@ -532,7 +531,7 @@ void cpu_mos6502::Op_BEQ(uint16_t src)
 
 void cpu_mos6502::Op_BIT(uint16_t src)
 {
-    uint8_t m = Read(src);
+    uint8_t m = bus_read_func_(src);
     uint8_t res = m & A;
     status::set_negative(status, res & 0x80);
     status = (status & 0x3F) | (uint8_t)(m & 0xC0);
@@ -570,7 +569,7 @@ void cpu_mos6502::Op_BRK(uint16_t src)
     StackPush(pc & 0xFF);
     StackPush(status | status::break_flag);
     status::set_interrupt(status, 1);
-    pc = (Read(irqVectorH) << 8) + Read(irqVectorL);
+    pc = (bus_read_func_(irqVectorH) << 8) + bus_read_func_(irqVectorL);
 }
 
 void cpu_mos6502::Op_BVC(uint16_t src)
@@ -611,7 +610,7 @@ void cpu_mos6502::Op_CLV(uint16_t src)
 
 void cpu_mos6502::Op_CMP(uint16_t src)
 {
-    unsigned int tmp = A - Read(src);
+    unsigned int tmp = A - bus_read_func_(src);
     status::set_carry(status, tmp < 0x100);
     status::set_negative(status, tmp & 0x80);
     status::set_zero(status, !(tmp & 0xFF));
@@ -619,7 +618,7 @@ void cpu_mos6502::Op_CMP(uint16_t src)
 
 void cpu_mos6502::Op_CPX(uint16_t src)
 {
-    unsigned int tmp = X - Read(src);
+    unsigned int tmp = X - bus_read_func_(src);
     status::set_carry(status, tmp < 0x100);
     status::set_negative(status, tmp & 0x80);
     status::set_zero(status, !(tmp & 0xFF));
@@ -627,7 +626,7 @@ void cpu_mos6502::Op_CPX(uint16_t src)
 
 void cpu_mos6502::Op_CPY(uint16_t src)
 {
-    unsigned int tmp = Y - Read(src);
+    unsigned int tmp = Y - bus_read_func_(src);
     status::set_carry(status, tmp < 0x100);
     status::set_negative(status, tmp & 0x80);
     status::set_zero(status, !(tmp & 0xFF));
@@ -635,11 +634,11 @@ void cpu_mos6502::Op_CPY(uint16_t src)
 
 void cpu_mos6502::Op_DEC(uint16_t src)
 {
-    uint8_t m = Read(src);
+    uint8_t m = bus_read_func_(src);
     m = (m - 1) % 256;
     status::set_negative(status, m & 0x80);
     status::set_zero(status, !m);
-    Write(src, m);
+    bus_write_func_(src, m);
 }
 
 void cpu_mos6502::Op_DEX(uint16_t src)
@@ -662,7 +661,7 @@ void cpu_mos6502::Op_DEY(uint16_t src)
 
 void cpu_mos6502::Op_EOR(uint16_t src)
 {
-    uint8_t m = Read(src);
+    uint8_t m = bus_read_func_(src);
     m = A ^ m;
     status::set_negative(status, m & 0x80);
     status::set_zero(status, !m);
@@ -671,11 +670,11 @@ void cpu_mos6502::Op_EOR(uint16_t src)
 
 void cpu_mos6502::Op_INC(uint16_t src)
 {
-    uint8_t m = Read(src);
+    uint8_t m = bus_read_func_(src);
     m = (m + 1) % 256;
     status::set_negative(status, m & 0x80);
     status::set_zero(status, !m);
-    Write(src, m);
+    bus_write_func_(src, m);
 }
 
 void cpu_mos6502::Op_INX(uint16_t src)
@@ -711,7 +710,7 @@ void cpu_mos6502::Op_JSR(uint16_t src)
 
 void cpu_mos6502::Op_LDA(uint16_t src)
 {
-    uint8_t m = Read(src);
+    uint8_t m = bus_read_func_(src);
     status::set_negative(status, m & 0x80);
     status::set_zero(status, !m);
     A = m;
@@ -719,7 +718,7 @@ void cpu_mos6502::Op_LDA(uint16_t src)
 
 void cpu_mos6502::Op_LDX(uint16_t src)
 {
-    uint8_t m = Read(src);
+    uint8_t m = bus_read_func_(src);
     status::set_negative(status, m & 0x80);
     status::set_zero(status, !m);
     X = m;
@@ -727,7 +726,7 @@ void cpu_mos6502::Op_LDX(uint16_t src)
 
 void cpu_mos6502::Op_LDY(uint16_t src)
 {
-    uint8_t m = Read(src);
+    uint8_t m = bus_read_func_(src);
     status::set_negative(status, m & 0x80);
     status::set_zero(status, !m);
     Y = m;
@@ -735,12 +734,12 @@ void cpu_mos6502::Op_LDY(uint16_t src)
 
 void cpu_mos6502::Op_LSR(uint16_t src)
 {
-    uint8_t m = Read(src);
+    uint8_t m = bus_read_func_(src);
     status::set_carry(status, m & 0x01);
     m >>= 1;
     status::set_negative(status, 0);
     status::set_zero(status, !m);
-    Write(src, m);
+    bus_write_func_(src, m);
 }
 
 void cpu_mos6502::Op_LSR_ACC(uint16_t src)
@@ -760,7 +759,7 @@ void cpu_mos6502::Op_NOP(uint16_t src)
 
 void cpu_mos6502::Op_ORA(uint16_t src)
 {
-    uint8_t m = Read(src);
+    uint8_t m = bus_read_func_(src);
     m = A | m;
     status::set_negative(status, m & 0x80);
     status::set_zero(status, !m);
@@ -792,7 +791,7 @@ void cpu_mos6502::Op_PLP(uint16_t src)
 
 void cpu_mos6502::Op_ROL(uint16_t src)
 {
-    uint16_t m = Read(src);
+    uint16_t m = bus_read_func_(src);
     m <<= 1;
     if (status::is_carry_flag_set(status))
         m |= 0x01;
@@ -800,7 +799,7 @@ void cpu_mos6502::Op_ROL(uint16_t src)
     m &= 0xFF;
     status::set_negative(status, m & 0x80);
     status::set_zero(status, !m);
-    Write(src, static_cast<std::uint8_t>(m));
+    bus_write_func_(src, static_cast<std::uint8_t>(m));
 }
 
 void cpu_mos6502::Op_ROL_ACC(uint16_t src)
@@ -818,7 +817,7 @@ void cpu_mos6502::Op_ROL_ACC(uint16_t src)
 
 void cpu_mos6502::Op_ROR(uint16_t src)
 {
-    uint16_t m = Read(src);
+    uint16_t m = bus_read_func_(src);
     if (status::is_carry_flag_set(status))
         m |= 0x100;
     status::set_carry(status, m & 0x01);
@@ -826,7 +825,7 @@ void cpu_mos6502::Op_ROR(uint16_t src)
     m &= 0xFF;
     status::set_negative(status, m & 0x80);
     status::set_zero(status, !m);
-    Write(src, static_cast<std::uint8_t>(m));
+    bus_write_func_(src, static_cast<std::uint8_t>(m));
 }
 
 void cpu_mos6502::Op_ROR_ACC(uint16_t src)
@@ -866,7 +865,7 @@ void cpu_mos6502::Op_RTS(uint16_t src)
 
 void cpu_mos6502::Op_SBC(uint16_t src)
 {
-    uint8_t m = Read(src);
+    uint8_t m = bus_read_func_(src);
     unsigned int tmp = A - m - (status::is_carry_flag_set(status) ? 0 : 1);
     status::set_negative(status, tmp & 0x80);
     status::set_zero(status, !(tmp & 0xFF));
@@ -902,17 +901,17 @@ void cpu_mos6502::Op_SEI(uint16_t src)
 
 void cpu_mos6502::Op_STA(uint16_t src)
 {
-    Write(src, A);
+    bus_write_func_(src, A);
 }
 
 void cpu_mos6502::Op_STX(uint16_t src)
 {
-    Write(src, X);
+    bus_write_func_(src, X);
 }
 
 void cpu_mos6502::Op_STY(uint16_t src)
 {
-    Write(src, Y);
+    bus_write_func_(src, Y);
 }
 
 void cpu_mos6502::Op_TAX(uint16_t src)

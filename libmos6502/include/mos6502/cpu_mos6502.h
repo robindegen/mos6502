@@ -20,7 +20,7 @@ public:
     using bus_write_func = void (*)(const std::uint16_t, const std::uint8_t) noexcept;
     using bus_read_func = auto (*)(const std::uint16_t) noexcept -> std::uint8_t;
 
-    cpu_mos6502(bus_read_func r, bus_write_func w);
+    cpu_mos6502(const bus_read_func read_func, const bus_write_func write_func);
     void NMI();
     void IRQ();
     void Reset();
@@ -156,8 +156,8 @@ private:
     static const uint16_t nmiVectorH = 0xFFFB;
     static const uint16_t nmiVectorL = 0xFFFA;
 
-    bus_read_func Read;
-    bus_write_func Write;
+    bus_read_func bus_read_func_;
+    bus_write_func bus_write_func_;
 
     // stack operations
     inline void StackPush(uint8_t byte);
