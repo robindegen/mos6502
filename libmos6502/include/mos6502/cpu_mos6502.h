@@ -145,14 +145,6 @@ private:
     void stack_push(std::uint8_t byte) noexcept;
     auto stack_pop() noexcept -> std::uint8_t;
 
-    // IRQ, reset, NMI vectors
-    static const std::uint16_t irq_vector_h = 0xFFFF;
-    static const std::uint16_t irq_vector_l = 0xFFFE;
-    static const std::uint16_t rst_vector_h = 0xFFFD;
-    static const std::uint16_t rst_vector_l = 0xFFFC;
-    static const std::uint16_t nmi_vector_h = 0xFFFB;
-    static const std::uint16_t nmi_vector_l = 0xFFFA;
-
     std::array<instruction, 256> instruction_;
 
     bool illegal_opcode_{};

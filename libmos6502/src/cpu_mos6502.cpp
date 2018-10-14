@@ -5,6 +5,14 @@
 namespace mos6502
 {
 
+// IRQ, reset, NMI vectors
+static constexpr std::uint16_t irq_vector_h = 0xFFFF;
+static constexpr std::uint16_t irq_vector_l = 0xFFFE;
+static constexpr std::uint16_t rst_vector_h = 0xFFFD;
+static constexpr std::uint16_t rst_vector_l = 0xFFFC;
+static constexpr std::uint16_t nmi_vector_h = 0xFFFB;
+static constexpr std::uint16_t nmi_vector_l = 0xFFFA;
+
 cpu_mos6502::cpu_mos6502(const bus_read_func read_func, const bus_write_func write_func)
     : instruction_{}
     , bus_read_func_{read_func}
