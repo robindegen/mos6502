@@ -21,6 +21,14 @@ public:
     using bus_read_func = auto (*)(const std::uint16_t) noexcept -> std::uint8_t;
 
     cpu_mos6502(const bus_read_func read_func, const bus_write_func write_func);
+    ~cpu_mos6502() = default;
+
+    cpu_mos6502(cpu_mos6502 &&) noexcept = delete;
+    auto operator=(cpu_mos6502 &&) noexcept -> cpu_mos6502 & = delete;
+
+    cpu_mos6502(const cpu_mos6502 &) noexcept = delete;
+    auto operator=(const cpu_mos6502 &) noexcept -> cpu_mos6502 & = delete;
+
     void NMI();
     void IRQ();
     void Reset();
