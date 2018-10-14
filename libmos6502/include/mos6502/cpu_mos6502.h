@@ -35,6 +35,8 @@ public:
     void reset();
     void run(const std::uint32_t n);
 
+    auto is_illegal_opcode_set() const noexcept -> bool;
+
 private:
     using opcode_exec_func = void (cpu_mos6502::*)(std::uint16_t);
     using addr_exec_func = std::uint16_t (cpu_mos6502::*)();

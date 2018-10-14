@@ -182,6 +182,11 @@ void cpu_mos6502::run(const std::uint32_t n)
     }
 }
 
+auto cpu_mos6502::is_illegal_opcode_set() const noexcept -> bool
+{
+    return illegal_opcode_;
+}
+
 void cpu_mos6502::exec(const instruction i)
 {
     const auto src = std::invoke(i.addr, *this);
