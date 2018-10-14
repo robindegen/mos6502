@@ -1,20 +1,250 @@
 #include <mos6502/cpu_mos6502.h>
 #include <status_registers.h>
+#include <functional>
 
 namespace mos6502
 {
 
 cpu_mos6502::cpu_mos6502(const bus_read_func read_func, const bus_write_func write_func)
-    : bus_read_func_{read_func}
+    : InstrTable{}
+    , bus_read_func_{read_func}
     , bus_write_func_{write_func}
 {
-    // fill jump table with ILLEGALs
+    initialize_illegal_opcodes();
+    initialize_opcodes();
+    reset();
+}
+
+uint16_t cpu_mos6502::Addr_ACC()
+{
+    return 0; // not used
+}
+
+uint16_t cpu_mos6502::Addr_IMM()
+{
+    return pc++;
+}
+
+uint16_t cpu_mos6502::Addr_ABS()
+{
+    uint16_t addrL;
+    uint16_t addrH;
+    uint16_t addr;
+
+    addrL = bus_read_func_(pc++);
+    addrH = bus_read_func_(pc++);
+
+    addr = addrL + (addrH << 8);
+
+    return addr;
+}
+
+uint16_t cpu_mos6502::Addr_ZER()
+{
+    return bus_read_func_(pc++);
+}
+
+uint16_t cpu_mos6502::Addr_IMP()
+{
+    return 0; // not used
+}
+
+uint16_t cpu_mos6502::Addr_REL()
+{
+    uint16_t offset;
+    uint16_t addr;
+
+    offset = (uint16_t)bus_read_func_(pc++);
+    if (offset & 0x80)
+        offset |= 0xFF00;
+    addr = pc + (int16_t)offset;
+    return addr;
+}
+
+uint16_t cpu_mos6502::Addr_ABI()
+{
+    uint16_t addrL;
+    uint16_t addrH;
+    uint16_t effL;
+    uint16_t effH;
+    uint16_t abs;
+    uint16_t addr;
+
+    addrL = bus_read_func_(pc++);
+    addrH = bus_read_func_(pc++);
+
+    abs = (addrH << 8) | addrL;
+
+    effL = bus_read_func_(abs);
+    effH = bus_read_func_((abs & 0xFF00) + ((abs + 1) & 0x00FF));
+
+    addr = effL + 0x100 * effH;
+
+    return addr;
+}
+
+uint16_t cpu_mos6502::Addr_ZEX()
+{
+    uint16_t addr = (bus_read_func_(pc++) + X) % 256;
+    return addr;
+}
+
+uint16_t cpu_mos6502::Addr_ZEY()
+{
+    uint16_t addr = (bus_read_func_(pc++) + Y) % 256;
+    return addr;
+}
+
+uint16_t cpu_mos6502::Addr_ABX()
+{
+    uint16_t addr;
+    uint16_t addrL;
+    uint16_t addrH;
+
+    addrL = bus_read_func_(pc++);
+    addrH = bus_read_func_(pc++);
+
+    addr = addrL + (addrH << 8) + X;
+    return addr;
+}
+
+uint16_t cpu_mos6502::Addr_ABY()
+{
+    uint16_t addr;
+    uint16_t addrL;
+    uint16_t addrH;
+
+    addrL = bus_read_func_(pc++);
+    addrH = bus_read_func_(pc++);
+
+    addr = addrL + (addrH << 8) + Y;
+    return addr;
+}
+
+uint16_t cpu_mos6502::Addr_INX()
+{
+    uint16_t zeroL;
+    uint16_t zeroH;
+    uint16_t addr;
+
+    zeroL = (bus_read_func_(pc++) + X) % 256;
+    zeroH = (zeroL + 1) % 256;
+    addr = bus_read_func_(zeroL) + (bus_read_func_(zeroH) << 8);
+
+    return addr;
+}
+
+uint16_t cpu_mos6502::Addr_INY()
+{
+    uint16_t zeroL;
+    uint16_t zeroH;
+    uint16_t addr;
+
+    zeroL = bus_read_func_(pc++);
+    zeroH = (zeroL + 1) % 256;
+    addr = bus_read_func_(zeroL) + (bus_read_func_(zeroH) << 8) + Y;
+
+    return addr;
+}
+
+void cpu_mos6502::reset()
+{
+    A = 0x00;
+    Y = 0x00;
+    X = 0x00;
+
+    pc = (bus_read_func_(rstVectorH) << 8) + bus_read_func_(rstVectorL); // load PC from reset vector
+
+    sp = 0xFD;
+
+    status |= status::constant_flag;
+
+    cycles = 6; // according to the datasheet, the reset routine takes 6 clock cycles
+
+    illegalOpcode = false;
+}
+
+void cpu_mos6502::StackPush(uint8_t byte)
+{
+    bus_write_func_(0x0100 + sp, byte);
+    if (sp == 0x00)
+        sp = 0xFF;
+    else
+        sp--;
+}
+
+uint8_t cpu_mos6502::StackPop()
+{
+    if (sp == 0xFF)
+        sp = 0x00;
+    else
+        sp++;
+    return bus_read_func_(0x0100 + sp);
+}
+
+void cpu_mos6502::irq()
+{
+    if (!status::is_interrupt_flag_set(status))
+    {
+        status::set_break(status, 0);
+        StackPush((pc >> 8) & 0xFF);
+        StackPush(pc & 0xFF);
+        StackPush(status);
+        status::set_interrupt(status, 1);
+        pc = (bus_read_func_(irqVectorH) << 8) + bus_read_func_(irqVectorL);
+    }
+}
+
+void cpu_mos6502::nmi()
+{
+    status::set_break(status, 0);
+    StackPush((pc >> 8) & 0xFF);
+    StackPush(pc & 0xFF);
+    StackPush(status);
+    status::set_interrupt(status, 1);
+    pc = (bus_read_func_(nmiVectorH) << 8) + bus_read_func_(nmiVectorL);
+}
+
+void cpu_mos6502::run(const std::uint32_t n)
+{
+    const auto start = cycles;
+
+    while (start + n > cycles && !illegalOpcode)
+    {
+        // fetch
+        const auto opcode = bus_read_func_(pc++);
+
+        // decode
+        const auto instr = InstrTable[opcode];
+
+        // execute
+        exec(instr);
+
+        cycles++;
+    }
+}
+
+void cpu_mos6502::exec(const instruction i)
+{
+    const auto src = std::invoke(i.addr, *this);
+    std::invoke(i.code, *this, src);
+}
+
+void cpu_mos6502::Op_ILLEGAL(uint16_t src)
+{
+    illegalOpcode = true;
+}
+
+void cpu_mos6502::initialize_illegal_opcodes()
+{
     for (auto &i : InstrTable)
     {
         i = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_ILLEGAL};
     }
+}
 
-    // insert opcodes
+void cpu_mos6502::initialize_opcodes()
+{
     InstrTable[0x69] = {&cpu_mos6502::Addr_IMM, &cpu_mos6502::Op_ADC};
     InstrTable[0x6D] = {&cpu_mos6502::Addr_ABS, &cpu_mos6502::Op_ADC};
     InstrTable[0x65] = {&cpu_mos6502::Addr_ZER, &cpu_mos6502::Op_ADC};
@@ -221,230 +451,6 @@ cpu_mos6502::cpu_mos6502(const bus_read_func read_func, const bus_write_func wri
     InstrTable[0x9A] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_TXS};
 
     InstrTable[0x98] = {&cpu_mos6502::Addr_IMP, &cpu_mos6502::Op_TYA};
-
-    Reset();
-}
-
-uint16_t cpu_mos6502::Addr_ACC()
-{
-    return 0; // not used
-}
-
-uint16_t cpu_mos6502::Addr_IMM()
-{
-    return pc++;
-}
-
-uint16_t cpu_mos6502::Addr_ABS()
-{
-    uint16_t addrL;
-    uint16_t addrH;
-    uint16_t addr;
-
-    addrL = bus_read_func_(pc++);
-    addrH = bus_read_func_(pc++);
-
-    addr = addrL + (addrH << 8);
-
-    return addr;
-}
-
-uint16_t cpu_mos6502::Addr_ZER()
-{
-    return bus_read_func_(pc++);
-}
-
-uint16_t cpu_mos6502::Addr_IMP()
-{
-    return 0; // not used
-}
-
-uint16_t cpu_mos6502::Addr_REL()
-{
-    uint16_t offset;
-    uint16_t addr;
-
-    offset = (uint16_t)bus_read_func_(pc++);
-    if (offset & 0x80)
-        offset |= 0xFF00;
-    addr = pc + (int16_t)offset;
-    return addr;
-}
-
-uint16_t cpu_mos6502::Addr_ABI()
-{
-    uint16_t addrL;
-    uint16_t addrH;
-    uint16_t effL;
-    uint16_t effH;
-    uint16_t abs;
-    uint16_t addr;
-
-    addrL = bus_read_func_(pc++);
-    addrH = bus_read_func_(pc++);
-
-    abs = (addrH << 8) | addrL;
-
-    effL = bus_read_func_(abs);
-    effH = bus_read_func_((abs & 0xFF00) + ((abs + 1) & 0x00FF));
-
-    addr = effL + 0x100 * effH;
-
-    return addr;
-}
-
-uint16_t cpu_mos6502::Addr_ZEX()
-{
-    uint16_t addr = (bus_read_func_(pc++) + X) % 256;
-    return addr;
-}
-
-uint16_t cpu_mos6502::Addr_ZEY()
-{
-    uint16_t addr = (bus_read_func_(pc++) + Y) % 256;
-    return addr;
-}
-
-uint16_t cpu_mos6502::Addr_ABX()
-{
-    uint16_t addr;
-    uint16_t addrL;
-    uint16_t addrH;
-
-    addrL = bus_read_func_(pc++);
-    addrH = bus_read_func_(pc++);
-
-    addr = addrL + (addrH << 8) + X;
-    return addr;
-}
-
-uint16_t cpu_mos6502::Addr_ABY()
-{
-    uint16_t addr;
-    uint16_t addrL;
-    uint16_t addrH;
-
-    addrL = bus_read_func_(pc++);
-    addrH = bus_read_func_(pc++);
-
-    addr = addrL + (addrH << 8) + Y;
-    return addr;
-}
-
-uint16_t cpu_mos6502::Addr_INX()
-{
-    uint16_t zeroL;
-    uint16_t zeroH;
-    uint16_t addr;
-
-    zeroL = (bus_read_func_(pc++) + X) % 256;
-    zeroH = (zeroL + 1) % 256;
-    addr = bus_read_func_(zeroL) + (bus_read_func_(zeroH) << 8);
-
-    return addr;
-}
-
-uint16_t cpu_mos6502::Addr_INY()
-{
-    uint16_t zeroL;
-    uint16_t zeroH;
-    uint16_t addr;
-
-    zeroL = bus_read_func_(pc++);
-    zeroH = (zeroL + 1) % 256;
-    addr = bus_read_func_(zeroL) + (bus_read_func_(zeroH) << 8) + Y;
-
-    return addr;
-}
-
-void cpu_mos6502::Reset()
-{
-    A = 0x00;
-    Y = 0x00;
-    X = 0x00;
-
-    pc = (bus_read_func_(rstVectorH) << 8) + bus_read_func_(rstVectorL); // load PC from reset vector
-
-    sp = 0xFD;
-
-    status |= status::constant_flag;
-
-    cycles = 6; // according to the datasheet, the reset routine takes 6 clock cycles
-
-    illegalOpcode = false;
-}
-
-void cpu_mos6502::StackPush(uint8_t byte)
-{
-    bus_write_func_(0x0100 + sp, byte);
-    if (sp == 0x00)
-        sp = 0xFF;
-    else
-        sp--;
-}
-
-uint8_t cpu_mos6502::StackPop()
-{
-    if (sp == 0xFF)
-        sp = 0x00;
-    else
-        sp++;
-    return bus_read_func_(0x0100 + sp);
-}
-
-void cpu_mos6502::IRQ()
-{
-    if (!status::is_interrupt_flag_set(status))
-    {
-        status::set_break(status, 0);
-        StackPush((pc >> 8) & 0xFF);
-        StackPush(pc & 0xFF);
-        StackPush(status);
-        status::set_interrupt(status, 1);
-        pc = (bus_read_func_(irqVectorH) << 8) + bus_read_func_(irqVectorL);
-    }
-}
-
-void cpu_mos6502::NMI()
-{
-    status::set_break(status, 0);
-    StackPush((pc >> 8) & 0xFF);
-    StackPush(pc & 0xFF);
-    StackPush(status);
-    status::set_interrupt(status, 1);
-    pc = (bus_read_func_(nmiVectorH) << 8) + bus_read_func_(nmiVectorL);
-}
-
-void cpu_mos6502::Run(uint32_t n)
-{
-    uint32_t start = cycles;
-    uint8_t opcode;
-    instruction instr;
-
-    while (start + n > cycles && !illegalOpcode)
-    {
-        // fetch
-        opcode = bus_read_func_(pc++);
-
-        // decode
-        instr = InstrTable[opcode];
-
-        // execute
-        Exec(instr);
-
-        cycles++;
-    }
-}
-
-void cpu_mos6502::Exec(instruction i)
-{
-    uint16_t src = (this->*i.addr)();
-    (this->*i.code)(src);
-}
-
-void cpu_mos6502::Op_ILLEGAL(uint16_t src)
-{
-    illegalOpcode = true;
 }
 
 void cpu_mos6502::Op_ADC(uint16_t src)

@@ -9,6 +9,7 @@
 #pragma once
 
 #include <cstdint>
+#include <array>
 
 namespace mos6502
 {
@@ -29,10 +30,10 @@ public:
     cpu_mos6502(const cpu_mos6502 &) noexcept = delete;
     auto operator=(const cpu_mos6502 &) noexcept -> cpu_mos6502 & = delete;
 
-    void NMI();
-    void IRQ();
-    void Reset();
-    void Run(uint32_t n);
+    void nmi();
+    void irq();
+    void reset();
+    void run(const std::uint32_t n);
 
 private:
     using opcode_exec_func = void (cpu_mos6502::*)(std::uint16_t);
@@ -44,7 +45,7 @@ private:
         opcode_exec_func code;
     };
 
-    void Exec(instruction i);
+    void exec(const instruction i);
 
     // addressing modes
     uint16_t Addr_ACC(); // ACCUMULATOR
@@ -135,6 +136,9 @@ private:
 
     void Op_ILLEGAL(uint16_t src);
 
+    void initialize_illegal_opcodes();
+    void initialize_opcodes();
+
     // stack operations
     inline void StackPush(uint8_t byte);
     inline uint8_t StackPop();
@@ -147,7 +151,7 @@ private:
     static const uint16_t nmiVectorH = 0xFFFB;
     static const uint16_t nmiVectorL = 0xFFFA;
 
-    static instruction InstrTable[256];
+    std::array<instruction, 256> InstrTable;
 
     bool illegalOpcode{};
 
