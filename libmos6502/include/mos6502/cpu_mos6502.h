@@ -140,8 +140,8 @@ private:
     void initialize_opcodes();
 
     // stack operations
-    inline void StackPush(uint8_t byte);
-    inline uint8_t StackPop();
+    void StackPush(uint8_t byte);
+    uint8_t StackPop();
 
     // IRQ, reset, NMI vectors
     static const uint16_t irqVectorH = 0xFFFF;
