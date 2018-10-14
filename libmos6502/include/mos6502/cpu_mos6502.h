@@ -153,7 +153,7 @@ private:
 
     std::array<instruction, 256> instruction_;
 
-    bool illegalOpcode{};
+    bool illegal_opcode_{};
 
     std::uint8_t A{};
     std::uint8_t X{};

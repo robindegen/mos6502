@@ -117,7 +117,7 @@ void cpu_mos6502::reset()
 
     cycles = 6; // according to the datasheet, the reset routine takes 6 clock cycles
 
-    illegalOpcode = false;
+    illegal_opcode_ = false;
 }
 
 void cpu_mos6502::stack_push(std::uint8_t byte) noexcept
@@ -167,7 +167,7 @@ void cpu_mos6502::run(const std::uint32_t n)
 {
     const auto start = cycles;
 
-    while (start + n > cycles && !illegalOpcode)
+    while (start + n > cycles && !illegal_opcode_)
     {
         // fetch
         const auto opcode = bus_read_func_(pc++);
@@ -190,7 +190,7 @@ void cpu_mos6502::exec(const instruction i)
 
 void cpu_mos6502::Op_ILLEGAL(uint16_t src)
 {
-    illegalOpcode = true;
+    illegal_opcode_ = true;
 }
 
 void cpu_mos6502::initialize_illegal_opcodes()
