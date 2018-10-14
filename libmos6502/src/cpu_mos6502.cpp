@@ -27,16 +27,9 @@ uint16_t cpu_mos6502::Addr_IMM()
 
 uint16_t cpu_mos6502::Addr_ABS()
 {
-    uint16_t addrL;
-    uint16_t addrH;
-    uint16_t addr;
-
-    addrL = bus_read_func_(pc++);
-    addrH = bus_read_func_(pc++);
-
-    addr = addrL + (addrH << 8);
-
-    return addr;
+    const std::uint16_t addr_l = bus_read_func_(pc++);
+    const std::uint16_t addr_h = bus_read_func_(pc++);
+    return addr_l + (addr_h << 8);
 }
 
 uint16_t cpu_mos6502::Addr_ZER()
@@ -51,100 +44,63 @@ uint16_t cpu_mos6502::Addr_IMP()
 
 uint16_t cpu_mos6502::Addr_REL()
 {
-    uint16_t offset;
-    uint16_t addr;
+    auto offset = static_cast<uint16_t>(bus_read_func_(pc++));
 
-    offset = (uint16_t)bus_read_func_(pc++);
     if (offset & 0x80)
         offset |= 0xFF00;
-    addr = pc + (int16_t)offset;
-    return addr;
+
+    return pc + static_cast<int16_t>(offset);
 }
 
 uint16_t cpu_mos6502::Addr_ABI()
 {
-    uint16_t addrL;
-    uint16_t addrH;
-    uint16_t effL;
-    uint16_t effH;
-    uint16_t abs;
-    uint16_t addr;
+    const std::uint16_t addr_l = bus_read_func_(pc++);
+    const std::uint16_t addr_h = bus_read_func_(pc++);
 
-    addrL = bus_read_func_(pc++);
-    addrH = bus_read_func_(pc++);
+    const std::uint16_t abs = (addr_h << 8) | addr_l;
 
-    abs = (addrH << 8) | addrL;
+    const std::uint16_t eff_l = bus_read_func_(abs);
+    const std::uint16_t eff_h = bus_read_func_((abs & 0xFF00) + ((abs + 1) & 0x00FF));
 
-    effL = bus_read_func_(abs);
-    effH = bus_read_func_((abs & 0xFF00) + ((abs + 1) & 0x00FF));
-
-    addr = effL + 0x100 * effH;
-
-    return addr;
+    return eff_l + 0x100 * eff_h;
 }
 
 uint16_t cpu_mos6502::Addr_ZEX()
 {
-    uint16_t addr = (bus_read_func_(pc++) + X) % 256;
-    return addr;
+    return (bus_read_func_(pc++) + X) % 256;
 }
 
 uint16_t cpu_mos6502::Addr_ZEY()
 {
-    uint16_t addr = (bus_read_func_(pc++) + Y) % 256;
-    return addr;
+    return (bus_read_func_(pc++) + Y) % 256;
 }
 
 uint16_t cpu_mos6502::Addr_ABX()
 {
-    uint16_t addr;
-    uint16_t addrL;
-    uint16_t addrH;
-
-    addrL = bus_read_func_(pc++);
-    addrH = bus_read_func_(pc++);
-
-    addr = addrL + (addrH << 8) + X;
-    return addr;
+    const std::uint16_t addr_l = bus_read_func_(pc++);
+    const std::uint16_t addr_h = bus_read_func_(pc++);
+    return addr_l + (addr_h << 8) + X;
 }
 
 uint16_t cpu_mos6502::Addr_ABY()
 {
-    uint16_t addr;
-    uint16_t addrL;
-    uint16_t addrH;
-
-    addrL = bus_read_func_(pc++);
-    addrH = bus_read_func_(pc++);
-
-    addr = addrL + (addrH << 8) + Y;
-    return addr;
+    const std::uint16_t addr_l = bus_read_func_(pc++);
+    const std::uint16_t addr_h = bus_read_func_(pc++);
+    return addr_l + (addr_h << 8) + Y;
 }
 
 uint16_t cpu_mos6502::Addr_INX()
 {
-    uint16_t zeroL;
-    uint16_t zeroH;
-    uint16_t addr;
-
-    zeroL = (bus_read_func_(pc++) + X) % 256;
-    zeroH = (zeroL + 1) % 256;
-    addr = bus_read_func_(zeroL) + (bus_read_func_(zeroH) << 8);
-
-    return addr;
+    const std::uint16_t zero_l = (bus_read_func_(pc++) + X) % 256;
+    const std::uint16_t zero_h = (zero_l + 1) % 256;
+    return bus_read_func_(zero_l) + (bus_read_func_(zero_h) << 8);
 }
 
 uint16_t cpu_mos6502::Addr_INY()
 {
-    uint16_t zeroL;
-    uint16_t zeroH;
-    uint16_t addr;
-
-    zeroL = bus_read_func_(pc++);
-    zeroH = (zeroL + 1) % 256;
-    addr = bus_read_func_(zeroL) + (bus_read_func_(zeroH) << 8) + Y;
-
-    return addr;
+    const std::uint16_t zero_l = bus_read_func_(pc++);
+    const std::uint16_t zero_h = (zero_l + 1) % 256;
+    return bus_read_func_(zero_l) + (bus_read_func_(zero_h) << 8) + Y;
 }
 
 void cpu_mos6502::reset()
