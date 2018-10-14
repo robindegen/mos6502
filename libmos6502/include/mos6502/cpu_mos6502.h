@@ -146,12 +146,12 @@ private:
     auto stack_pop() noexcept -> std::uint8_t;
 
     // IRQ, reset, NMI vectors
-    static const uint16_t irqVectorH = 0xFFFF;
-    static const uint16_t irqVectorL = 0xFFFE;
-    static const uint16_t rstVectorH = 0xFFFD;
-    static const uint16_t rstVectorL = 0xFFFC;
-    static const uint16_t nmiVectorH = 0xFFFB;
-    static const uint16_t nmiVectorL = 0xFFFA;
+    static const std::uint16_t irq_vector_h = 0xFFFF;
+    static const std::uint16_t irq_vector_l = 0xFFFE;
+    static const std::uint16_t rst_vector_h = 0xFFFD;
+    static const std::uint16_t rst_vector_l = 0xFFFC;
+    static const std::uint16_t nmi_vector_h = 0xFFFB;
+    static const std::uint16_t nmi_vector_l = 0xFFFA;
 
     std::array<instruction, 256> instruction_;
 

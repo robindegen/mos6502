@@ -109,7 +109,7 @@ void cpu_mos6502::reset()
     Y = 0x00;
     X = 0x00;
 
-    pc = (bus_read_func_(rstVectorH) << 8) + bus_read_func_(rstVectorL); // load PC from reset vector
+    pc = (bus_read_func_(rst_vector_h) << 8) + bus_read_func_(rst_vector_l); // load PC from reset vector
 
     sp = 0xFD;
 
@@ -149,7 +149,7 @@ void cpu_mos6502::irq()
         stack_push(pc & 0xFF);
         stack_push(status);
         status::set_interrupt(status, 1);
-        pc = (bus_read_func_(irqVectorH) << 8) + bus_read_func_(irqVectorL);
+        pc = (bus_read_func_(irq_vector_h) << 8) + bus_read_func_(irq_vector_l);
     }
 }
 
@@ -160,7 +160,7 @@ void cpu_mos6502::nmi()
     stack_push(pc & 0xFF);
     stack_push(status);
     status::set_interrupt(status, 1);
-    pc = (bus_read_func_(nmiVectorH) << 8) + bus_read_func_(nmiVectorL);
+    pc = (bus_read_func_(nmi_vector_h) << 8) + bus_read_func_(nmi_vector_l);
 }
 
 void cpu_mos6502::run(const std::uint32_t n)
@@ -538,7 +538,7 @@ void cpu_mos6502::Op_BRK(uint16_t src)
     stack_push(pc & 0xFF);
     stack_push(status | status::break_flag);
     status::set_interrupt(status, 1);
-    pc = (bus_read_func_(irqVectorH) << 8) + bus_read_func_(irqVectorL);
+    pc = (bus_read_func_(irq_vector_h) << 8) + bus_read_func_(irq_vector_l);
 }
 
 void cpu_mos6502::Op_BVC(uint16_t src)
