@@ -165,7 +165,7 @@ private:
     std::uint8_t status{};
 
     // consumed clock cycles
-    uint32_t cycles{};
+    uint32_t cycles_{};
 
     bus_read_func bus_read_func_;
     bus_write_func bus_write_func_;

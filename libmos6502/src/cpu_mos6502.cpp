@@ -115,7 +115,7 @@ void cpu_mos6502::reset()
 
     status |= status::constant_flag;
 
-    cycles = 6; // according to the datasheet, the reset routine takes 6 clock cycles
+    cycles_ = 6; // according to the datasheet, the reset routine takes 6 clock cycles
 
     illegal_opcode_ = false;
 }
@@ -165,9 +165,9 @@ void cpu_mos6502::nmi()
 
 void cpu_mos6502::run(const std::uint32_t n)
 {
-    const auto start = cycles;
+    const auto start = cycles_;
 
-    while (start + n > cycles && !illegal_opcode_)
+    while (start + n > cycles_ && !illegal_opcode_)
     {
         // fetch
         const auto opcode = bus_read_func_(pc++);
@@ -178,7 +178,7 @@ void cpu_mos6502::run(const std::uint32_t n)
         // execute
         exec(instr);
 
-        cycles++;
+        cycles_++;
     }
 }
 
