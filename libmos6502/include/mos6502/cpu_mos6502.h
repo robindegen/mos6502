@@ -38,7 +38,7 @@ public:
     auto is_illegal_opcode_set() const noexcept -> bool;
 
 private:
-    using opcode_exec_func = void (cpu_mos6502::*)(std::uint16_t);
+    using opcode_exec_func = void (cpu_mos6502::*)(std::uint16_t) noexcept;
     using addr_exec_func = auto (cpu_mos6502::*)() noexcept -> std::uint16_t;
 
     struct instruction
@@ -65,78 +65,78 @@ private:
     auto addr_abi() noexcept -> std::uint16_t; // ABSOLUTE INDIRECT
 
     // opcodes (grouped as per datasheet)
-    void Op_ADC(uint16_t src);
-    void Op_AND(uint16_t src);
-    void Op_ASL(uint16_t src);
-    void Op_ASL_ACC(uint16_t src);
-    void Op_BCC(uint16_t src);
-    void Op_BCS(uint16_t src);
+    void op_adc(std::uint16_t src) noexcept;
+    void op_and(std::uint16_t src) noexcept;
+    void op_asl(std::uint16_t src) noexcept;
+    void op_asl_acc(std::uint16_t src) noexcept;
+    void op_bcc(std::uint16_t src) noexcept;
+    void op_bcs(std::uint16_t src) noexcept;
 
-    void Op_BEQ(uint16_t src);
-    void Op_BIT(uint16_t src);
-    void Op_BMI(uint16_t src);
-    void Op_BNE(uint16_t src);
-    void Op_BPL(uint16_t src);
+    void op_beq(std::uint16_t src) noexcept;
+    void op_bit(std::uint16_t src) noexcept;
+    void op_bmi(std::uint16_t src) noexcept;
+    void op_bne(std::uint16_t src) noexcept;
+    void op_bpl(std::uint16_t src) noexcept;
 
-    void Op_BRK(uint16_t src);
-    void Op_BVC(uint16_t src);
-    void Op_BVS(uint16_t src);
-    void Op_CLC(uint16_t src);
-    void Op_CLD(uint16_t src);
+    void op_brk(std::uint16_t src) noexcept;
+    void op_bvc(std::uint16_t src) noexcept;
+    void op_bvs(std::uint16_t src) noexcept;
+    void op_clc(std::uint16_t src) noexcept;
+    void op_cld(std::uint16_t src) noexcept;
 
-    void Op_CLI(uint16_t src);
-    void Op_CLV(uint16_t src);
-    void Op_CMP(uint16_t src);
-    void Op_CPX(uint16_t src);
-    void Op_CPY(uint16_t src);
+    void op_cli(std::uint16_t src) noexcept;
+    void op_clv(std::uint16_t src) noexcept;
+    void op_cmp(std::uint16_t src) noexcept;
+    void op_cpx(std::uint16_t src) noexcept;
+    void op_cpy(std::uint16_t src) noexcept;
 
-    void Op_DEC(uint16_t src);
-    void Op_DEX(uint16_t src);
-    void Op_DEY(uint16_t src);
-    void Op_EOR(uint16_t src);
-    void Op_INC(uint16_t src);
+    void op_dec(std::uint16_t src) noexcept;
+    void op_dex(std::uint16_t src) noexcept;
+    void op_dey(std::uint16_t src) noexcept;
+    void op_eor(std::uint16_t src) noexcept;
+    void op_inc(std::uint16_t src) noexcept;
 
-    void Op_INX(uint16_t src);
-    void Op_INY(uint16_t src);
-    void Op_JMP(uint16_t src);
-    void Op_JSR(uint16_t src);
-    void Op_LDA(uint16_t src);
+    void op_inx(std::uint16_t src) noexcept;
+    void op_iny(std::uint16_t src) noexcept;
+    void op_jmp(std::uint16_t src) noexcept;
+    void op_jsr(std::uint16_t src) noexcept;
+    void op_lda(std::uint16_t src) noexcept;
 
-    void Op_LDX(uint16_t src);
-    void Op_LDY(uint16_t src);
-    void Op_LSR(uint16_t src);
-    void Op_LSR_ACC(uint16_t src);
-    void Op_NOP(uint16_t src);
-    void Op_ORA(uint16_t src);
+    void op_ldx(std::uint16_t src) noexcept;
+    void op_ldy(std::uint16_t src) noexcept;
+    void op_lsr(std::uint16_t src) noexcept;
+    void op_lsr_acc(std::uint16_t src) noexcept;
+    void op_nop(std::uint16_t src) noexcept;
+    void op_ora(std::uint16_t src) noexcept;
 
-    void Op_PHA(uint16_t src);
-    void Op_PHP(uint16_t src);
-    void Op_PLA(uint16_t src);
-    void Op_PLP(uint16_t src);
-    void Op_ROL(uint16_t src);
-    void Op_ROL_ACC(uint16_t src);
+    void op_pha(std::uint16_t src) noexcept;
+    void op_php(std::uint16_t src) noexcept;
+    void op_pla(std::uint16_t src) noexcept;
+    void op_plp(std::uint16_t src) noexcept;
+    void op_rol(std::uint16_t src) noexcept;
+    void op_rol_acc(std::uint16_t src) noexcept;
 
-    void Op_ROR(uint16_t src);
-    void Op_ROR_ACC(uint16_t src);
-    void Op_RTI(uint16_t src);
-    void Op_RTS(uint16_t src);
-    void Op_SBC(uint16_t src);
-    void Op_SEC(uint16_t src);
-    void Op_SED(uint16_t src);
+    void op_ror(std::uint16_t src) noexcept;
+    void op_ror_acc(std::uint16_t src) noexcept;
+    void op_rti(std::uint16_t src) noexcept;
+    void op_rts(std::uint16_t src) noexcept;
+    void op_sbc(std::uint16_t src) noexcept;
+    void op_sec(std::uint16_t src) noexcept;
+    void op_sed(std::uint16_t src) noexcept;
 
-    void Op_SEI(uint16_t src);
-    void Op_STA(uint16_t src);
-    void Op_STX(uint16_t src);
-    void Op_STY(uint16_t src);
-    void Op_TAX(uint16_t src);
+    void op_sei(std::uint16_t src) noexcept;
+    void op_sta(std::uint16_t src) noexcept;
+    void op_stx(std::uint16_t src) noexcept;
+    void op_sty(std::uint16_t src) noexcept;
+    void op_tax(std::uint16_t src) noexcept;
 
-    void Op_TAY(uint16_t src);
-    void Op_TSX(uint16_t src);
-    void Op_TXA(uint16_t src);
-    void Op_TXS(uint16_t src);
-    void Op_TYA(uint16_t src);
+    void op_tay(std::uint16_t src) noexcept;
+    void op_tsx(std::uint16_t src) noexcept;
+    void op_txa(std::uint16_t src) noexcept;
+    void op_txs(std::uint16_t src) noexcept;
+    void op_tya(std::uint16_t src) noexcept;
 
-    void Op_ILLEGAL(uint16_t src);
+    void op_illegal(std::uint16_t src) noexcept;
 
     void initialize_illegal_opcodes();
     void initialize_opcodes();
