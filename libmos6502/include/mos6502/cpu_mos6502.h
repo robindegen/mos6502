@@ -8,20 +8,19 @@
 
 #pragma once
 
+#include <mos6502/ibus_interface.h>
 #include <cstdint>
 #include <array>
 
 namespace mos6502
 {
 
-class cpu_mos6502
+class bus;
+
+class cpu_mos6502 final : public ibus_interface
 {
 public:
-    // read/write callbacks
-    using bus_write_func = void (*)(const std::uint16_t, const std::uint8_t) noexcept;
-    using bus_read_func = auto (*)(const std::uint16_t) noexcept -> std::uint8_t;
-
-    cpu_mos6502(const bus_read_func read_func, const bus_write_func write_func);
+    cpu_mos6502(bus &bus);
     ~cpu_mos6502() = default;
 
     cpu_mos6502(cpu_mos6502 &&) noexcept = delete;
@@ -30,10 +29,14 @@ public:
     cpu_mos6502(const cpu_mos6502 &) noexcept = delete;
     auto operator=(const cpu_mos6502 &) noexcept -> cpu_mos6502 & = delete;
 
-    void nmi() noexcept;
-    void irq() noexcept;
+    void trigger_nmi() noexcept;
+    void trigger_irq() noexcept;
     void reset() noexcept;
-    void run(const std::uint32_t n) noexcept;
+
+    void run() noexcept;
+    void stop() noexcept;
+
+    void step(const std::uint32_t n = 1) noexcept;
 
     auto is_illegal_opcode_set() const noexcept -> bool;
 
@@ -54,6 +57,8 @@ private:
 
     void bus_write(const std::uint16_t address, const std::uint8_t value) const noexcept;
     auto bus_read(const std::uint16_t address) const noexcept -> std::uint8_t;
+
+    void on_irq() noexcept override;
 
     // addressing modes
     auto addr_acc() noexcept -> std::uint16_t; // ACCUMULATOR
@@ -150,6 +155,7 @@ private:
     std::array<instruction, 256> instruction_;
 
     bool illegal_opcode_{};
+    bool running_{};
 
     std::uint8_t A{};
     std::uint8_t X{};
@@ -161,8 +167,7 @@ private:
     // consumed clock cycles
     uint32_t cycles_{};
 
-    bus_read_func bus_read_func_;
-    bus_write_func bus_write_func_;
+    bus &bus_;
 };
 
 } // namespace mos6502

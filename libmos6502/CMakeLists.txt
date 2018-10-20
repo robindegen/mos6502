@@ -22,16 +22,37 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 
 set(LIBMOS6502_SOURCES
+    src/acia_6551.cpp
+    include/mos6502/acia_6551.h
+    src/bus.cpp
+    include/mos6502/bus.h
     src/cpu_mos6502.cpp
     include/mos6502/cpu_mos6502.h
     src/status_registers.h
+    include/mos6502/ibus_device.h
+    include/mos6502/ibus_interface.h
+    include/mos6502/ic_register.h
+    src/ram.cpp
+    include/mos6502/ram.h
+    src/rom.cpp
+    include/mos6502/rom.h
+    src/via_6522.cpp
+    include/mos6502/via_6522.h
+    src/memory.cpp
+    include/mos6502/memory.h
 )
+
+source_group(libmos6502 FILES ${LIBMOS6502_SOURCES})
 
 add_library(libmos6502 STATIC ${LIBMOS6502_SOURCES})
 
 target_include_directories(libmos6502
     PUBLIC include
     PRIVATE src
+)
+
+target_link_libraries(libmos6502
+    PUBLIC aeon_streams
 )
 
 set_target_properties(

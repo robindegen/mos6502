@@ -1,4 +1,5 @@
 #include <mos6502/cpu_mos6502.h>
+#include <mos6502/bus.h>
 #include <status_registers.h>
 #include <functional>
 
@@ -13,17 +14,18 @@ static constexpr std::uint16_t rst_vector_l = 0xFFFC;
 static constexpr std::uint16_t nmi_vector_h = 0xFFFB;
 static constexpr std::uint16_t nmi_vector_l = 0xFFFA;
 
-cpu_mos6502::cpu_mos6502(const bus_read_func read_func, const bus_write_func write_func)
+cpu_mos6502::cpu_mos6502(bus &bus)
     : instruction_{}
-    , bus_read_func_{read_func}
-    , bus_write_func_{write_func}
+    , bus_{bus}
 {
+    bus_.set_cpu_bus_interface(this);
+
     initialize_illegal_opcodes();
     initialize_opcodes();
     reset();
 }
 
-void cpu_mos6502::nmi() noexcept
+void cpu_mos6502::trigger_nmi() noexcept
 {
     status::set_break(status, 0);
     stack_push((pc >> 8) & 0xFF);
@@ -33,7 +35,7 @@ void cpu_mos6502::nmi() noexcept
     pc = (bus_read(nmi_vector_h) << 8) + bus_read(nmi_vector_l);
 }
 
-void cpu_mos6502::irq() noexcept
+void cpu_mos6502::trigger_irq() noexcept
 {
     if (!status::is_interrupt_flag_set(status))
     {
@@ -63,7 +65,22 @@ void cpu_mos6502::reset() noexcept
     illegal_opcode_ = false;
 }
 
-void cpu_mos6502::run(const std::uint32_t n) noexcept
+void cpu_mos6502::run() noexcept
+{
+    running_ = true;
+
+    while (running_)
+    {
+        step(1);
+    }
+}
+
+void cpu_mos6502::stop() noexcept
+{
+    running_ = false;
+}
+
+void cpu_mos6502::step(const std::uint32_t n) noexcept
 {
     const auto start = cycles_;
 
@@ -115,12 +132,17 @@ auto cpu_mos6502::stack_pop() noexcept -> std::uint8_t
 
 void cpu_mos6502::bus_write(const std::uint16_t address, const std::uint8_t value) const noexcept
 {
-    bus_write_func_(address, value);
+    bus_.write(address, value);
 }
 
 auto cpu_mos6502::bus_read(const std::uint16_t address) const noexcept -> std::uint8_t
 {
-    return bus_read_func_(address);
+    return bus_.read(address);
+}
+
+void cpu_mos6502::on_irq() noexcept
+{
+    trigger_irq();
 }
 
 auto cpu_mos6502::addr_acc() noexcept -> std::uint16_t
