@@ -30,12 +30,16 @@ project(mos6502)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/dep/cmake")
+set(CMAKE_PREFIX_PATH "$ENV{QTDIR}")
 
 include(CompilerFlags)
 
 set(CMAKE_CXX_STANDARD 17)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+find_package(Qt5Core)
+find_package(Qt5Widgets)
 
 add_subdirectory(dep/googletest)
 add_subdirectory(dep/google_benchmark)
