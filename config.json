@@ -1,0 +1,33 @@
+{
+    "devices": [{
+            "name": "ROM",
+            "enabled": true,
+            "type": "rom",
+            "offset": "0x8000",
+            "size": "0x8000",
+            "path": "C:/Development/6502/6502_rua1/os/build/firmware.rom"
+        },
+        {
+            "name": "RAM",
+            "enabled": true,
+            "type": "ram",
+            "offset": "0x0000",
+            "size": "0x4000"
+        },
+        {
+            "name": "acia1",
+            "enabled": true,
+            "type": "acia_6551"
+        },
+        {
+            "name": "acia2",
+            "enabled": true,
+            "type": "acia_6551"
+        },
+        {
+            "name": "acia3",
+            "enabled": true,
+            "type": "acia_6551"
+        }
+    ]
+}
