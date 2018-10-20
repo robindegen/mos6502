@@ -1,5 +1,6 @@
 #include <model/computer.h>
 #include <model/rom.h>
+#include <model/ram.h>
 
 namespace rua1::model
 {
@@ -24,7 +25,12 @@ computer::computer(view::imain_window &main_window, std::filesystem::path path)
                 break;
             }
             case config::device_type::ram:
+            {
+                auto component = std::make_unique<ram>(main_window_, device->as<config::ram_device_config>());
+                bus_.add(component->get_device());
+                components_.emplace_back(std::move(component));
                 break;
+            }
             case config::device_type::acia_6551:
                 break;
             case config::device_type::via_6522:
