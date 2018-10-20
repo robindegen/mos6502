@@ -12,7 +12,7 @@ namespace rua1::model
 class rom final : public component
 {
 public:
-    explicit rom(const view::imain_window &main_window, const config::rom_device_config &config);
+    explicit rom(view::imain_window &main_window, const config::rom_device_config &config);
     ~rom();
 
     rom(rom &&) noexcept = delete;

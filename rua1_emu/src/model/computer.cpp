@@ -4,7 +4,7 @@
 namespace rua1::model
 {
 
-computer::computer(const view::imain_window &main_window, std::filesystem::path path)
+computer::computer(view::imain_window &main_window, std::filesystem::path path)
     : main_window_{main_window}
     , config_{std::move(path)}
     , bus_{}

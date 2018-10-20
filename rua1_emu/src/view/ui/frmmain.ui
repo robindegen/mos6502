@@ -47,19 +47,6 @@
    <widget class="QWidget" name="dock_devices_content">
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
-      <widget class="QPushButton" name="btn_toggle_cpu">
-       <property name="text">
-        <string>CPU</string>
-       </property>
-       <property name="checkable">
-        <bool>true</bool>
-       </property>
-       <property name="checked">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item>
       <spacer name="vertical_spacer">
        <property name="orientation">
         <enum>Qt::Vertical</enum>

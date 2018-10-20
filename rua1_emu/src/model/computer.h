@@ -14,7 +14,7 @@ namespace rua1::model
 class computer final
 {
 public:
-    explicit computer(const view::imain_window &main_window, std::filesystem::path path);
+    explicit computer(view::imain_window &main_window, std::filesystem::path path);
     ~computer();
 
     computer(computer &&) noexcept = delete;
@@ -24,7 +24,7 @@ public:
     auto operator=(const computer &) noexcept -> computer & = delete;
 
 private:
-    const view::imain_window &main_window_;
+    view::imain_window &main_window_;
     config::configuration config_;
     mos6502::bus bus_;
     cpu cpu_;

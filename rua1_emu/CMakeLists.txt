@@ -56,6 +56,7 @@ source_group(model FILES ${RUA1_EMU_MODEL_SOURCES})
 set(RUA1_EMU_VIEW_SOURCES
     src/view/frmmain.cpp
     src/view/frmcpu.cpp
+    src/view/sidebar_toggle_button.cpp
     src/view/imain_window.h
 )
 
@@ -64,6 +65,7 @@ source_group(view FILES ${RUA1_EMU_VIEW_SOURCES})
 set(RUA1_EMU_VIEW_MOC_HEADERS
     src/view/frmmain.h
     src/view/frmcpu.h
+    src/view/sidebar_toggle_button.h
 )
 
 source_group(view FILES ${RUA1_EMU_VIEW_MOC_HEADERS})
@@ -96,6 +98,8 @@ add_executable(rua1_emu
     ${RUA1_EMU_VIEW_MOC_SOURCES}
     ${RUA1_EMU_VIEW_UI_HEADERS}
 )
+
+target_compile_definitions(rua1_emu PRIVATE QT_NO_KEYWORDS)
 
 target_include_directories(rua1_emu
     PUBLIC

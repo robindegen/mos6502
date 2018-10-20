@@ -2,6 +2,7 @@
 
 #include <QtWidgets/QDialog>
 #include <memory>
+#include <functional>
 
 namespace Ui
 {
@@ -16,7 +17,7 @@ class frmcpu final : public QDialog
     Q_OBJECT
 
 public:
-    frmcpu(QWidget *parent = nullptr);
+    explicit frmcpu(std::function<void()> close_signal, QWidget *parent = nullptr);
     ~frmcpu();
 
     frmcpu(frmcpu &&) noexcept = delete;
@@ -25,11 +26,11 @@ public:
     frmcpu(const frmcpu &) noexcept = delete;
     auto operator=(const frmcpu &) noexcept -> frmcpu & = delete;
 
-signals:
-    void closing();
-
 private:
+    void closeEvent(QCloseEvent *event) override;
+
     std::unique_ptr<Ui::frmcpu> ui_;
+    std::function<void()> close_signal_;
 };
 
 } // namespace rua1::view

@@ -40,6 +40,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 find_package(Qt5Core)
 find_package(Qt5Widgets)
+add_definitions(-DQT_NO_KEYWORDS)
 
 add_subdirectory(dep/googletest)
 add_subdirectory(dep/google_benchmark)

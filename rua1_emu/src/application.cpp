@@ -26,9 +26,20 @@ void application::add_mdi_child(QWidget *widget, Qt::WindowFlags flags) const no
     frmmain_.add_mdi_child(widget, flags);
 }
 
-void application::remove_mdi_child(QWidget *widget) const noexcept
+auto application::register_toggle_button(const QString &text, const bool default_state,
+                                         std::function<void(const bool)> on_toggle) -> view::sidebar_toggle_button *
 {
-    frmmain_.remove_mdi_child(widget);
+    return frmmain_.register_toggle_button(text, default_state, std::move(on_toggle));
+}
+
+void application::remove_toggle_button(const view::sidebar_toggle_button *button)
+{
+    frmmain_.remove_toggle_button(button);
+}
+
+void application::remove_all_toggle_buttons()
+{
+    frmmain_.remove_all_toggle_buttons();
 }
 
 } // namespace rua1
