@@ -2,3 +2,19 @@
 	path = dep/cmake
 	url = ../../aeon-engine/libaeon-cmake.git
 	branch = master
+[submodule "dep/libaeon"]
+	path = dep/libaeon
+	url = ../../aeon-engine/libaeon.git
+	branch = master
+[submodule "dep/googletest"]
+	path = dep/googletest
+	url = ../../aeon-external-dependencies/googletest.git
+	branch = submodule
+[submodule "dep/google_benchmark"]
+	path = dep/google_benchmark
+	url = ../../aeon-external-dependencies/google_benchmark.git
+	branch = submodule
+[submodule "dep/json11"]
+	path = dep/json11
+	url = ../../aeon-external-dependencies/json11.git
+	branch = submodule

@@ -37,5 +37,10 @@ set(CMAKE_CXX_STANDARD 17)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+add_subdirectory(dep/googletest)
+add_subdirectory(dep/google_benchmark)
+add_subdirectory(dep/json11)
+add_subdirectory(dep/libaeon/src)
+
 add_subdirectory(libmos6502)
 add_subdirectory(rua1_emu)
