@@ -1,7 +1,9 @@
 #pragma once
 
 #include <model/component.h>
+#include <model/sidebar_toggleable.h>
 #include <view/imain_window.h>
+#include <view/frmmemory.h>
 #include <configuration.h>
 #include <mos6502/bus.h>
 #include <mos6502/rom.h>
@@ -9,7 +11,7 @@
 namespace rua1::model
 {
 
-class rom final : public component
+class rom final : public component, public sidebar_toggleable<view::frmmemory>
 {
 public:
     explicit rom(view::imain_window &main_window, const config::rom_device_config &config);

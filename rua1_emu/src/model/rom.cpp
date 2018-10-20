@@ -5,7 +5,8 @@ namespace rua1::model
 {
 
 rom::rom(view::imain_window &main_window, const config::rom_device_config &config)
-    : rom_{static_cast<std::uint16_t>(config.offset()), static_cast<std::uint16_t>(config.size())}
+    : sidebar_toggleable<view::frmmemory>{config.name(), false, main_window}
+    , rom_{static_cast<std::uint16_t>(config.offset()), static_cast<std::uint16_t>(config.size())}
 {
     aeon::streams::file_stream file{config.file()};
     rom_.load(file, 0);

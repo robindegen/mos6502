@@ -1,6 +1,6 @@
 #pragma once
 
-#include <QtWidgets/QDialog>
+#include <QtWidgets/QFrame>
 #include <memory>
 #include <functional>
 
@@ -12,7 +12,7 @@ class frmcpu;
 namespace rua1::view
 {
 
-class frmcpu final : public QDialog
+class frmcpu final : public QFrame
 {
     Q_OBJECT
 

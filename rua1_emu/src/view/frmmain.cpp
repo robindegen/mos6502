@@ -22,11 +22,11 @@ void frmmain::add_mdi_child(QWidget *widget, Qt::WindowFlags flags) const noexce
     ui_->mdi_area->addSubWindow(widget, flags);
 }
 
-auto frmmain::register_toggle_button(const QString &text, const bool default_state,
+auto frmmain::register_toggle_button(const std::string &text, const bool default_state,
                                      std::function<void(const bool)> on_toggle) -> sidebar_toggle_button *
 {
-    auto toggle_button_reg =
-        std::make_unique<sidebar_toggle_button>(ui_->verticalLayout, text, default_state, std::move(on_toggle));
+    auto toggle_button_reg = std::make_unique<sidebar_toggle_button>(ui_->verticalLayout, QString::fromStdString(text),
+                                                                     default_state, std::move(on_toggle));
     const auto toggle_button_reg_ptr = toggle_button_reg.get();
     sidebar_toggle_buttons_.emplace_back(std::move(toggle_button_reg));
     return toggle_button_reg_ptr;

@@ -45,6 +45,7 @@ set(RUA1_EMU_MODEL_SOURCES
     src/model/ram.h
     src/model/rom.cpp
     src/model/rom.h
+    src/model/sidebar_toggleable.h
     src/model/via_6522.cpp
     src/model/via_6522.h
 )
@@ -56,6 +57,7 @@ source_group(model FILES ${RUA1_EMU_MODEL_SOURCES})
 set(RUA1_EMU_VIEW_SOURCES
     src/view/frmmain.cpp
     src/view/frmcpu.cpp
+    src/view/frmmemory.cpp
     src/view/sidebar_toggle_button.cpp
     src/view/imain_window.h
 )
@@ -65,6 +67,7 @@ source_group(view FILES ${RUA1_EMU_VIEW_SOURCES})
 set(RUA1_EMU_VIEW_MOC_HEADERS
     src/view/frmmain.h
     src/view/frmcpu.h
+    src/view/frmmemory.h
     src/view/sidebar_toggle_button.h
 )
 
@@ -79,6 +82,7 @@ source_group(view\\generated FILES ${RUA1_EMU_VIEW_MOC_SOURCES})
 set(RUA1_EMU_VIEW_UI_FILES
     src/view/ui/frmmain.ui
     src/view/ui/frmcpu.ui
+    src/view/ui/frmmemory.ui
 )
 
 source_group(view\\ui FILES ${RUA1_EMU_VIEW_UI_FILES})

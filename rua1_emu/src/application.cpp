@@ -26,7 +26,7 @@ void application::add_mdi_child(QWidget *widget, Qt::WindowFlags flags) const no
     frmmain_.add_mdi_child(widget, flags);
 }
 
-auto application::register_toggle_button(const QString &text, const bool default_state,
+auto application::register_toggle_button(const std::string &text, const bool default_state,
                                          std::function<void(const bool)> on_toggle) -> view::sidebar_toggle_button *
 {
     return frmmain_.register_toggle_button(text, default_state, std::move(on_toggle));

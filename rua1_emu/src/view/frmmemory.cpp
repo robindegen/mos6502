@@ -1,22 +1,22 @@
-#include <view/frmcpu.h>
-#include <ui_frmcpu.h>
+#include <view/frmmemory.h>
+#include <ui_frmmemory.h>
 #include <QCloseEvent>
 
 namespace rua1::view
 {
 
-frmcpu::frmcpu(std::function<void()> close_signal, QWidget *parent)
+frmmemory::frmmemory(std::function<void()> close_signal, QWidget *parent)
     : QFrame(parent)
-    , ui_{std::make_unique<Ui::frmcpu>()}
+    , ui_{std::make_unique<Ui::frmmemory>()}
     , close_signal_{std::move(close_signal)}
 {
     ui_->setupUi(this);
     setAttribute(Qt::WA_DeleteOnClose);
 }
 
-frmcpu::~frmcpu() = default;
+frmmemory::~frmmemory() = default;
 
-void frmcpu::closeEvent(QCloseEvent *event)
+void frmmemory::closeEvent(QCloseEvent *event)
 {
     close_signal_();
     event->accept();
