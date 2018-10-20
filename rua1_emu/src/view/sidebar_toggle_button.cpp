@@ -12,8 +12,9 @@ sidebar_toggle_button::sidebar_toggle_button(QVBoxLayout *layout, const QString 
     button_->setCheckable(true);
     button_->setChecked(default_state);
 
-    // int offset = layout->count();
-    layout->insertWidget(0, button_);
+    const int offset = layout->count();
+    assert(offset > 0);
+    layout->insertWidget(offset - 1, button_);
 
     signal_ = connect(button_, &QPushButton::toggled, [this](auto checked) { on_toggle_(checked); });
 }
