@@ -32,6 +32,7 @@ set(LIBMOS6502_SOURCES
     include/mos6502/ibus_device.h
     include/mos6502/ibus_interface.h
     include/mos6502/ic_register.h
+    include/mos6502/icpu_debug_interface.h
     src/ram.cpp
     include/mos6502/ram.h
     src/rom.cpp

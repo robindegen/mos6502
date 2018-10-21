@@ -13,7 +13,7 @@ class sidebar_toggle_button final : QObject
     Q_OBJECT
 
 public:
-    explicit sidebar_toggle_button(QVBoxLayout *layout, const QString &text, const bool default_state,
+    explicit sidebar_toggle_button(QVBoxLayout *layout, const QString &text,
                                    std::function<void(const bool)> on_toggle) noexcept;
 
     ~sidebar_toggle_button();

@@ -3,14 +3,14 @@
 namespace rua1::view
 {
 
-sidebar_toggle_button::sidebar_toggle_button(QVBoxLayout *layout, const QString &text, const bool default_state,
+sidebar_toggle_button::sidebar_toggle_button(QVBoxLayout *layout, const QString &text,
                                              std::function<void(const bool)> on_toggle) noexcept
     : on_toggle_{std::move(on_toggle)}
     , layout_{layout}
     , button_{new QPushButton{text}}
 {
     button_->setCheckable(true);
-    button_->setChecked(default_state);
+    button_->setChecked(false);
 
     const int offset = layout->count();
     assert(offset > 0);

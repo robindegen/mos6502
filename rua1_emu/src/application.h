@@ -26,8 +26,8 @@ public:
 private:
     void add_mdi_child(QWidget *widget, Qt::WindowFlags flags) const noexcept override;
 
-    auto register_toggle_button(const std::string &text, const bool default_state,
-                                std::function<void(const bool)> on_toggle) -> view::sidebar_toggle_button * override;
+    auto register_toggle_button(const std::string &text, std::function<void(const bool)> on_toggle)
+        -> view::sidebar_toggle_button * override;
     void remove_toggle_button(const view::sidebar_toggle_button *button) override;
     void remove_all_toggle_buttons() override;
 

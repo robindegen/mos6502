@@ -51,6 +51,9 @@ computer::computer(view::imain_window &main_window, std::filesystem::path path)
             default:;
         }
     }
+
+    // TODO: The CPU view should be shown by default.
+    // cpu_.create_view();
 }
 
 computer::~computer() = default;

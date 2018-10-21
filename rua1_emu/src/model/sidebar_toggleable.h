@@ -11,15 +11,13 @@ template <typename view_t>
 class sidebar_toggleable
 {
 public:
-    explicit sidebar_toggleable(std::string text, const bool default_shown, view::imain_window &main_window)
+    explicit sidebar_toggleable(std::string text, view::imain_window &main_window)
         : main_window_{main_window}
         , view_{}
         , sidebar_button_{main_window.register_toggle_button(
-              text, default_shown, [this](auto checked) { internal_on_sidebar_button_toggled(checked); })}
+              text, [this](auto checked) { internal_on_sidebar_button_toggled(checked); })}
         , text_{std::move(text)}
     {
-        if (default_shown)
-            internal_create_view();
     }
 
     virtual ~sidebar_toggleable() = default;
@@ -36,7 +34,9 @@ protected:
         return view_;
     }
 
-private:
+    virtual void on_view_created() = 0;
+    virtual void on_view_destroyed() = 0;
+
     void internal_create_view()
     {
         assert(!view_);
@@ -44,15 +44,22 @@ private:
         main_window_.add_mdi_child(view_);
         view_->setWindowTitle(QString::fromStdString(text_));
         view_->show();
+
+        on_view_created();
     }
 
     void internal_destroy_view()
     {
         assert(view_);
+
+        // Notify before actually closing the view to give a chance of cleaning up if needed.
+        on_view_destroyed();
+
         view_->parentWidget()->close();
         view_ = nullptr;
     }
 
+private:
     void internal_on_sidebar_button_toggled(const bool checked)
     {
         if (checked)

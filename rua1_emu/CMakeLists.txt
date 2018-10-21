@@ -62,6 +62,8 @@ set(RUA1_EMU_VIEW_SOURCES
     src/view/frmmemory.cpp
     src/view/sidebar_toggle_button.cpp
     src/view/imain_window.h
+    src/view/ui_utilities.cpp
+    src/view/ui_utilities.h
 )
 
 source_group(view FILES ${RUA1_EMU_VIEW_SOURCES})

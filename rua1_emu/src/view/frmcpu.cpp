@@ -1,4 +1,5 @@
 #include <view/frmcpu.h>
+#include <view/ui_utilities.h>
 #include <ui_frmcpu.h>
 #include <QCloseEvent>
 
@@ -15,6 +16,31 @@ frmcpu::frmcpu(std::function<void()> close_signal, QWidget *parent)
 }
 
 frmcpu::~frmcpu() = default;
+
+void frmcpu::set_pc_value(const std::uint16_t val)
+{
+    ui_->lbl_register_pc->setText(utilities::uint16_to_qstring(val, ui_->rdo_hex->isChecked()));
+}
+
+void frmcpu::set_sp_value(const std::uint8_t val)
+{
+    ui_->lbl_register_sp->setText(utilities::uint8_to_qstring(val, ui_->rdo_hex->isChecked()));
+}
+
+void frmcpu::set_a_value(const std::uint8_t val)
+{
+    ui_->lbl_register_a->setText(utilities::uint8_to_qstring(val, ui_->rdo_hex->isChecked()));
+}
+
+void frmcpu::set_x_value(const std::uint8_t val)
+{
+    ui_->lbl_register_x->setText(utilities::uint8_to_qstring(val, ui_->rdo_hex->isChecked()));
+}
+
+void frmcpu::set_y_value(const std::uint8_t val)
+{
+    ui_->lbl_register_y->setText(utilities::uint8_to_qstring(val, ui_->rdo_hex->isChecked()));
+}
 
 void frmcpu::closeEvent(QCloseEvent *event)
 {

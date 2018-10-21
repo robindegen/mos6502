@@ -15,12 +15,13 @@
 namespace mos6502
 {
 
+class icpu_debug_interface;
 class bus;
 
 class cpu_mos6502 final : public ibus_interface
 {
 public:
-    cpu_mos6502(bus &bus);
+    explicit cpu_mos6502(bus &bus, icpu_debug_interface *debug_interface = nullptr);
     ~cpu_mos6502() = default;
 
     cpu_mos6502(cpu_mos6502 &&) noexcept = delete;
@@ -37,6 +38,41 @@ public:
     void stop() noexcept;
 
     void step(const std::uint32_t n = 1) noexcept;
+
+    auto a() const noexcept
+    {
+        return register_a_;
+    }
+
+    auto x() const noexcept
+    {
+        return register_x_;
+    }
+
+    auto y() const noexcept
+    {
+        return register_y_;
+    }
+
+    auto sp() const noexcept
+    {
+        return register_sp_;
+    }
+
+    auto pc() const noexcept
+    {
+        return register_pc_;
+    }
+
+    auto status() const noexcept
+    {
+        return register_status_;
+    }
+
+    auto num_executed_instructions() const noexcept
+    {
+        return num_executed_instructions_;
+    }
 
     auto is_illegal_opcode_set() const noexcept -> bool;
 
@@ -154,20 +190,19 @@ private:
 
     std::array<instruction, 256> instruction_;
 
-    bool illegal_opcode_{};
     bool running_{};
 
-    std::uint8_t A{};
-    std::uint8_t X{};
-    std::uint8_t Y{};
-    std::uint8_t sp{};
-    std::uint16_t pc{};
-    std::uint8_t status{};
-
-    // consumed clock cycles
-    uint32_t cycles_{};
+    std::uint8_t register_a_{};
+    std::uint8_t register_x_{};
+    std::uint8_t register_y_{};
+    std::uint8_t register_sp_{};
+    std::uint16_t register_pc_{};
+    std::uint8_t register_status_{};
+    std::uint32_t num_executed_instructions_{};
+    bool illegal_opcode_{};
 
     bus &bus_;
+    icpu_debug_interface *debug_interface_;
 };
 
 } // namespace mos6502

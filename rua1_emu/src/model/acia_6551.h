@@ -26,6 +26,9 @@ public:
     auto get_device() noexcept -> mos6502::ibus_device & override;
 
 private:
+    void on_view_created() override;
+    void on_view_destroyed() override;
+
     mos6502::acia_6551 acia_;
 };
 

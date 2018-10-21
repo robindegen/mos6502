@@ -26,6 +26,12 @@ public:
     frmcpu(const frmcpu &) noexcept = delete;
     auto operator=(const frmcpu &) noexcept -> frmcpu & = delete;
 
+    void set_pc_value(const std::uint16_t val);
+    void set_sp_value(const std::uint8_t val);
+    void set_a_value(const std::uint8_t val);
+    void set_x_value(const std::uint8_t val);
+    void set_y_value(const std::uint8_t val);
+
 private:
     void closeEvent(QCloseEvent *event) override;
 

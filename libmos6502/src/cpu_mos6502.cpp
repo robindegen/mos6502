@@ -1,5 +1,6 @@
 #include <mos6502/cpu_mos6502.h>
 #include <mos6502/bus.h>
+#include <mos6502/icpu_debug_interface.h>
 #include <status_registers.h>
 #include <functional>
 
@@ -14,9 +15,10 @@ static constexpr std::uint16_t rst_vector_l = 0xFFFC;
 static constexpr std::uint16_t nmi_vector_h = 0xFFFB;
 static constexpr std::uint16_t nmi_vector_l = 0xFFFA;
 
-cpu_mos6502::cpu_mos6502(bus &bus)
+cpu_mos6502::cpu_mos6502(bus &bus, icpu_debug_interface *debug_interface)
     : instruction_{}
     , bus_{bus}
+    , debug_interface_{debug_interface}
 {
     bus_.set_cpu_bus_interface(this);
 
@@ -27,42 +29,51 @@ cpu_mos6502::cpu_mos6502(bus &bus)
 
 void cpu_mos6502::trigger_nmi() noexcept
 {
-    status::set_break(status, 0);
-    stack_push((pc >> 8) & 0xFF);
-    stack_push(pc & 0xFF);
-    stack_push(status);
-    status::set_interrupt(status, 1);
-    pc = (bus_read(nmi_vector_h) << 8) + bus_read(nmi_vector_l);
+    if (debug_interface_)
+        debug_interface_->on_cpu_nmi();
+
+    status::set_break(register_status_, 0);
+    stack_push((register_pc_ >> 8) & 0xFF);
+    stack_push(register_pc_ & 0xFF);
+    stack_push(register_status_);
+    status::set_interrupt(register_status_, 1);
+    register_pc_ = (bus_read(nmi_vector_h) << 8) + bus_read(nmi_vector_l);
 }
 
 void cpu_mos6502::trigger_irq() noexcept
 {
-    if (!status::is_interrupt_flag_set(status))
+    if (!status::is_interrupt_flag_set(register_status_))
     {
-        status::set_break(status, 0);
-        stack_push((pc >> 8) & 0xFF);
-        stack_push(pc & 0xFF);
-        stack_push(status);
-        status::set_interrupt(status, 1);
-        pc = (bus_read(irq_vector_h) << 8) + bus_read(irq_vector_l);
+        if (debug_interface_)
+            debug_interface_->on_cpu_irq();
+
+        status::set_break(register_status_, 0);
+        stack_push((register_pc_ >> 8) & 0xFF);
+        stack_push(register_pc_ & 0xFF);
+        stack_push(register_status_);
+        status::set_interrupt(register_status_, 1);
+        register_pc_ = (bus_read(irq_vector_h) << 8) + bus_read(irq_vector_l);
     }
 }
 
 void cpu_mos6502::reset() noexcept
 {
-    A = 0x00;
-    Y = 0x00;
-    X = 0x00;
+    register_a_ = 0x00;
+    register_y_ = 0x00;
+    register_x_ = 0x00;
 
-    pc = (bus_read(rst_vector_h) << 8) + bus_read(rst_vector_l); // load PC from reset vector
+    register_pc_ = (bus_read(rst_vector_h) << 8) + bus_read(rst_vector_l); // load PC from reset vector
 
-    sp = 0xFD;
+    register_sp_ = 0xFD;
 
-    status |= status::constant_flag;
+    register_status_ |= status::constant_flag;
 
-    cycles_ = 6; // according to the datasheet, the reset routine takes 6 clock cycles
+    num_executed_instructions_ = 0;
 
     illegal_opcode_ = false;
+
+    if (debug_interface_)
+        debug_interface_->on_cpu_reset();
 }
 
 void cpu_mos6502::run() noexcept
@@ -82,12 +93,12 @@ void cpu_mos6502::stop() noexcept
 
 void cpu_mos6502::step(const std::uint32_t n) noexcept
 {
-    const auto start = cycles_;
+    const auto start = num_executed_instructions_;
 
-    while (start + n > cycles_ && !illegal_opcode_)
+    while (start + n > num_executed_instructions_ && !illegal_opcode_)
     {
         // fetch
-        const auto opcode = bus_read(pc++);
+        const auto opcode = bus_read(register_pc_++);
 
         // decode
         const auto instr = instruction_[opcode];
@@ -95,7 +106,10 @@ void cpu_mos6502::step(const std::uint32_t n) noexcept
         // execute
         exec(instr);
 
-        cycles_++;
+        num_executed_instructions_++;
+
+        if (debug_interface_)
+            debug_interface_->on_cpu_instruction_executed();
     }
 }
 
@@ -112,22 +126,28 @@ void cpu_mos6502::exec(const instruction i) noexcept
 
 void cpu_mos6502::stack_push(std::uint8_t byte) noexcept
 {
-    bus_write(0x0100 + sp, byte);
+    bus_write(0x0100 + register_sp_, byte);
 
-    if (sp == 0x00)
-        sp = 0xFF;
+    if (register_sp_ == 0x00)
+        register_sp_ = 0xFF;
     else
-        sp--;
+        register_sp_--;
+
+    if (debug_interface_)
+        debug_interface_->on_cpu_stack_push(byte);
 }
 
 auto cpu_mos6502::stack_pop() noexcept -> std::uint8_t
 {
-    if (sp == 0xFF)
-        sp = 0x00;
+    if (register_sp_ == 0xFF)
+        register_sp_ = 0x00;
     else
-        sp++;
+        register_sp_++;
 
-    return bus_read(0x0100 + sp);
+    if (debug_interface_)
+        debug_interface_->on_cpu_stack_pop();
+
+    return bus_read(0x0100 + register_sp_);
 }
 
 void cpu_mos6502::bus_write(const std::uint16_t address, const std::uint8_t value) const noexcept
@@ -152,19 +172,19 @@ auto cpu_mos6502::addr_acc() noexcept -> std::uint16_t
 
 auto cpu_mos6502::addr_imm() noexcept -> std::uint16_t
 {
-    return pc++;
+    return register_pc_++;
 }
 
 auto cpu_mos6502::addr_abs() noexcept -> std::uint16_t
 {
-    const std::uint16_t addr_l = bus_read(pc++);
-    const std::uint16_t addr_h = bus_read(pc++);
+    const std::uint16_t addr_l = bus_read(register_pc_++);
+    const std::uint16_t addr_h = bus_read(register_pc_++);
     return addr_l + (addr_h << 8);
 }
 
 auto cpu_mos6502::addr_zer() noexcept -> std::uint16_t
 {
-    return bus_read(pc++);
+    return bus_read(register_pc_++);
 }
 
 auto cpu_mos6502::addr_imp() noexcept -> std::uint16_t
@@ -174,18 +194,18 @@ auto cpu_mos6502::addr_imp() noexcept -> std::uint16_t
 
 auto cpu_mos6502::addr_rel() noexcept -> std::uint16_t
 {
-    auto offset = static_cast<uint16_t>(bus_read(pc++));
+    auto offset = static_cast<uint16_t>(bus_read(register_pc_++));
 
     if (offset & 0x80)
         offset |= 0xFF00;
 
-    return pc + static_cast<int16_t>(offset);
+    return register_pc_ + static_cast<int16_t>(offset);
 }
 
 auto cpu_mos6502::addr_abi() noexcept -> std::uint16_t
 {
-    const std::uint16_t addr_l = bus_read(pc++);
-    const std::uint16_t addr_h = bus_read(pc++);
+    const std::uint16_t addr_l = bus_read(register_pc_++);
+    const std::uint16_t addr_h = bus_read(register_pc_++);
 
     const std::uint16_t abs = (addr_h << 8) | addr_l;
 
@@ -197,345 +217,345 @@ auto cpu_mos6502::addr_abi() noexcept -> std::uint16_t
 
 auto cpu_mos6502::addr_zex() noexcept -> std::uint16_t
 {
-    return (bus_read(pc++) + X) % 256;
+    return (bus_read(register_pc_++) + register_x_) % 256;
 }
 
 auto cpu_mos6502::addr_zey() noexcept -> std::uint16_t
 {
-    return (bus_read(pc++) + Y) % 256;
+    return (bus_read(register_pc_++) + register_y_) % 256;
 }
 
 auto cpu_mos6502::addr_abx() noexcept -> std::uint16_t
 {
-    const std::uint16_t addr_l = bus_read(pc++);
-    const std::uint16_t addr_h = bus_read(pc++);
-    return addr_l + (addr_h << 8) + X;
+    const std::uint16_t addr_l = bus_read(register_pc_++);
+    const std::uint16_t addr_h = bus_read(register_pc_++);
+    return addr_l + (addr_h << 8) + register_x_;
 }
 
 auto cpu_mos6502::addr_aby() noexcept -> std::uint16_t
 {
-    const std::uint16_t addr_l = bus_read(pc++);
-    const std::uint16_t addr_h = bus_read(pc++);
-    return addr_l + (addr_h << 8) + Y;
+    const std::uint16_t addr_l = bus_read(register_pc_++);
+    const std::uint16_t addr_h = bus_read(register_pc_++);
+    return addr_l + (addr_h << 8) + register_y_;
 }
 
 auto cpu_mos6502::addr_inx() noexcept -> std::uint16_t
 {
-    const std::uint16_t zero_l = (bus_read(pc++) + X) % 256;
+    const std::uint16_t zero_l = (bus_read(register_pc_++) + register_x_) % 256;
     const std::uint16_t zero_h = (zero_l + 1) % 256;
     return bus_read(zero_l) + (bus_read(zero_h) << 8);
 }
 
 auto cpu_mos6502::addr_iny() noexcept -> std::uint16_t
 {
-    const std::uint16_t zero_l = bus_read(pc++);
+    const std::uint16_t zero_l = bus_read(register_pc_++);
     const std::uint16_t zero_h = (zero_l + 1) % 256;
-    return bus_read(zero_l) + (bus_read(zero_h) << 8) + Y;
+    return bus_read(zero_l) + (bus_read(zero_h) << 8) + register_y_;
 }
 
 void cpu_mos6502::op_adc(std::uint16_t src) noexcept
 {
     const auto m = bus_read(src);
-    unsigned int tmp = m + A + (status::is_carry_flag_set(status) ? 1 : 0);
-    status::set_zero(status, !(tmp & 0xFF));
-    if (status::is_decimal_flag_set(status))
+    unsigned int tmp = m + register_a_ + (status::is_carry_flag_set(register_status_) ? 1 : 0);
+    status::set_zero(register_status_, !(tmp & 0xFF));
+    if (status::is_decimal_flag_set(register_status_))
     {
-        if (((A & 0xF) + (m & 0xF) + (status::is_carry_flag_set(status) ? 1 : 0)) > 9)
+        if (((register_a_ & 0xF) + (m & 0xF) + (status::is_carry_flag_set(register_status_) ? 1 : 0)) > 9)
             tmp += 6;
-        status::set_negative(status, tmp & 0x80);
-        status::set_overflow(status, !((A ^ m) & 0x80) && ((A ^ tmp) & 0x80));
+        status::set_negative(register_status_, tmp & 0x80);
+        status::set_overflow(register_status_, !((register_a_ ^ m) & 0x80) && ((register_a_ ^ tmp) & 0x80));
         if (tmp > 0x99)
         {
             tmp += 96;
         }
-        status::set_carry(status, tmp > 0x99);
+        status::set_carry(register_status_, tmp > 0x99);
     }
     else
     {
-        status::set_negative(status, tmp & 0x80);
-        status::set_overflow(status, !((A ^ m) & 0x80) && ((A ^ tmp) & 0x80));
-        status::set_carry(status, tmp > 0xFF);
+        status::set_negative(register_status_, tmp & 0x80);
+        status::set_overflow(register_status_, !((register_a_ ^ m) & 0x80) && ((register_a_ ^ tmp) & 0x80));
+        status::set_carry(register_status_, tmp > 0xFF);
     }
 
-    A = tmp & 0xFF;
+    register_a_ = tmp & 0xFF;
 }
 
 void cpu_mos6502::op_and(std::uint16_t src) noexcept
 {
     const auto m = bus_read(src);
-    const std::uint8_t res = m & A;
-    status::set_negative(status, res & 0x80);
-    status::set_zero(status, !res);
-    A = res;
+    const std::uint8_t res = m & register_a_;
+    status::set_negative(register_status_, res & 0x80);
+    status::set_zero(register_status_, !res);
+    register_a_ = res;
 }
 
 void cpu_mos6502::op_asl(std::uint16_t src) noexcept
 {
     auto m = bus_read(src);
-    status::set_carry(status, m & 0x80);
+    status::set_carry(register_status_, m & 0x80);
     m <<= 1;
     m &= 0xFF;
-    status::set_negative(status, m & 0x80);
-    status::set_zero(status, !m);
+    status::set_negative(register_status_, m & 0x80);
+    status::set_zero(register_status_, !m);
     bus_write(src, m);
 }
 
 void cpu_mos6502::op_asl_acc(std::uint16_t src) noexcept
 {
-    auto m = A;
-    status::set_carry(status, m & 0x80);
+    auto m = register_a_;
+    status::set_carry(register_status_, m & 0x80);
     m <<= 1;
     m &= 0xFF;
-    status::set_negative(status, m & 0x80);
-    status::set_zero(status, !m);
-    A = m;
+    status::set_negative(register_status_, m & 0x80);
+    status::set_zero(register_status_, !m);
+    register_a_ = m;
 }
 
 void cpu_mos6502::op_bcc(std::uint16_t src) noexcept
 {
-    if (!status::is_carry_flag_set(status))
+    if (!status::is_carry_flag_set(register_status_))
     {
-        pc = src;
+        register_pc_ = src;
     }
 }
 
 void cpu_mos6502::op_bcs(std::uint16_t src) noexcept
 {
-    if (status::is_carry_flag_set(status))
+    if (status::is_carry_flag_set(register_status_))
     {
-        pc = src;
+        register_pc_ = src;
     }
 }
 
 void cpu_mos6502::op_beq(std::uint16_t src) noexcept
 {
-    if (status::is_zero_flag_set(status))
+    if (status::is_zero_flag_set(register_status_))
     {
-        pc = src;
+        register_pc_ = src;
     }
 }
 
 void cpu_mos6502::op_bit(std::uint16_t src) noexcept
 {
     const auto m = bus_read(src);
-    const std::uint8_t res = m & A;
-    status::set_negative(status, res & 0x80);
-    status = (status & 0x3F) | static_cast<uint8_t>(m & 0xC0);
-    status::set_zero(status, !res);
+    const std::uint8_t res = m & register_a_;
+    status::set_negative(register_status_, res & 0x80);
+    register_status_ = (register_status_ & 0x3F) | static_cast<uint8_t>(m & 0xC0);
+    status::set_zero(register_status_, !res);
 }
 
 void cpu_mos6502::op_bmi(std::uint16_t src) noexcept
 {
-    if (status::is_negative_flag_set(status))
+    if (status::is_negative_flag_set(register_status_))
     {
-        pc = src;
+        register_pc_ = src;
     }
 }
 
 void cpu_mos6502::op_bne(std::uint16_t src) noexcept
 {
-    if (!status::is_zero_flag_set(status))
+    if (!status::is_zero_flag_set(register_status_))
     {
-        pc = src;
+        register_pc_ = src;
     }
 }
 
 void cpu_mos6502::op_bpl(std::uint16_t src) noexcept
 {
-    if (!status::is_negative_flag_set(status))
+    if (!status::is_negative_flag_set(register_status_))
     {
-        pc = src;
+        register_pc_ = src;
     }
 }
 
 void cpu_mos6502::op_brk(std::uint16_t src) noexcept
 {
-    pc++;
-    stack_push((pc >> 8) & 0xFF);
-    stack_push(pc & 0xFF);
-    stack_push(status | status::break_flag);
-    status::set_interrupt(status, 1);
-    pc = (bus_read(irq_vector_h) << 8) + bus_read(irq_vector_l);
+    register_pc_++;
+    stack_push((register_pc_ >> 8) & 0xFF);
+    stack_push(register_pc_ & 0xFF);
+    stack_push(register_status_ | status::break_flag);
+    status::set_interrupt(register_status_, 1);
+    register_pc_ = (bus_read(irq_vector_h) << 8) + bus_read(irq_vector_l);
 }
 
 void cpu_mos6502::op_bvc(std::uint16_t src) noexcept
 {
-    if (!status::is_overflow_flag_set(status))
+    if (!status::is_overflow_flag_set(register_status_))
     {
-        pc = src;
+        register_pc_ = src;
     }
 }
 
 void cpu_mos6502::op_bvs(std::uint16_t src) noexcept
 {
-    if (status::is_overflow_flag_set(status))
+    if (status::is_overflow_flag_set(register_status_))
     {
-        pc = src;
+        register_pc_ = src;
     }
 }
 
 void cpu_mos6502::op_clc(std::uint16_t src) noexcept
 {
-    status::set_carry(status, 0);
+    status::set_carry(register_status_, 0);
 }
 
 void cpu_mos6502::op_cld(std::uint16_t src) noexcept
 {
-    status::set_decimal(status, 0);
+    status::set_decimal(register_status_, 0);
 }
 
 void cpu_mos6502::op_cli(std::uint16_t src) noexcept
 {
-    status::set_interrupt(status, 0);
+    status::set_interrupt(register_status_, 0);
 }
 
 void cpu_mos6502::op_clv(std::uint16_t src) noexcept
 {
-    status::set_overflow(status, 0);
+    status::set_overflow(register_status_, 0);
 }
 
 void cpu_mos6502::op_cmp(std::uint16_t src) noexcept
 {
-    const unsigned int tmp = A - bus_read(src);
-    status::set_carry(status, tmp < 0x100);
-    status::set_negative(status, tmp & 0x80);
-    status::set_zero(status, !(tmp & 0xFF));
+    const unsigned int tmp = register_a_ - bus_read(src);
+    status::set_carry(register_status_, tmp < 0x100);
+    status::set_negative(register_status_, tmp & 0x80);
+    status::set_zero(register_status_, !(tmp & 0xFF));
 }
 
 void cpu_mos6502::op_cpx(std::uint16_t src) noexcept
 {
-    const unsigned int tmp = X - bus_read(src);
-    status::set_carry(status, tmp < 0x100);
-    status::set_negative(status, tmp & 0x80);
-    status::set_zero(status, !(tmp & 0xFF));
+    const unsigned int tmp = register_x_ - bus_read(src);
+    status::set_carry(register_status_, tmp < 0x100);
+    status::set_negative(register_status_, tmp & 0x80);
+    status::set_zero(register_status_, !(tmp & 0xFF));
 }
 
 void cpu_mos6502::op_cpy(std::uint16_t src) noexcept
 {
-    const unsigned int tmp = Y - bus_read(src);
-    status::set_carry(status, tmp < 0x100);
-    status::set_negative(status, tmp & 0x80);
-    status::set_zero(status, !(tmp & 0xFF));
+    const unsigned int tmp = register_y_ - bus_read(src);
+    status::set_carry(register_status_, tmp < 0x100);
+    status::set_negative(register_status_, tmp & 0x80);
+    status::set_zero(register_status_, !(tmp & 0xFF));
 }
 
 void cpu_mos6502::op_dec(std::uint16_t src) noexcept
 {
     auto m = bus_read(src);
     m = (m - 1) % 256;
-    status::set_negative(status, m & 0x80);
-    status::set_zero(status, !m);
+    status::set_negative(register_status_, m & 0x80);
+    status::set_zero(register_status_, !m);
     bus_write(src, m);
 }
 
 void cpu_mos6502::op_dex(std::uint16_t src) noexcept
 {
-    auto m = X;
+    auto m = register_x_;
     m = (m - 1) % 256;
-    status::set_negative(status, m & 0x80);
-    status::set_zero(status, !m);
-    X = m;
+    status::set_negative(register_status_, m & 0x80);
+    status::set_zero(register_status_, !m);
+    register_x_ = m;
 }
 
 void cpu_mos6502::op_dey(std::uint16_t src) noexcept
 {
-    auto m = Y;
+    auto m = register_y_;
     m = (m - 1) % 256;
-    status::set_negative(status, m & 0x80);
-    status::set_zero(status, !m);
-    Y = m;
+    status::set_negative(register_status_, m & 0x80);
+    status::set_zero(register_status_, !m);
+    register_y_ = m;
 }
 
 void cpu_mos6502::op_eor(std::uint16_t src) noexcept
 {
     auto m = bus_read(src);
-    m = A ^ m;
-    status::set_negative(status, m & 0x80);
-    status::set_zero(status, !m);
-    A = m;
+    m = register_a_ ^ m;
+    status::set_negative(register_status_, m & 0x80);
+    status::set_zero(register_status_, !m);
+    register_a_ = m;
 }
 
 void cpu_mos6502::op_inc(std::uint16_t src) noexcept
 {
     auto m = bus_read(src);
     m = (m + 1) % 256;
-    status::set_negative(status, m & 0x80);
-    status::set_zero(status, !m);
+    status::set_negative(register_status_, m & 0x80);
+    status::set_zero(register_status_, !m);
     bus_write(src, m);
 }
 
 void cpu_mos6502::op_inx(std::uint16_t src) noexcept
 {
-    auto m = X;
+    auto m = register_x_;
     m = (m + 1) % 256;
-    status::set_negative(status, m & 0x80);
-    status::set_zero(status, !m);
-    X = m;
+    status::set_negative(register_status_, m & 0x80);
+    status::set_zero(register_status_, !m);
+    register_x_ = m;
 }
 
 void cpu_mos6502::op_iny(std::uint16_t src) noexcept
 {
-    auto m = Y;
+    auto m = register_y_;
     m = (m + 1) % 256;
-    status::set_negative(status, m & 0x80);
-    status::set_zero(status, !m);
-    Y = m;
+    status::set_negative(register_status_, m & 0x80);
+    status::set_zero(register_status_, !m);
+    register_y_ = m;
 }
 
 void cpu_mos6502::op_jmp(std::uint16_t src) noexcept
 {
-    pc = src;
+    register_pc_ = src;
 }
 
 void cpu_mos6502::op_jsr(std::uint16_t src) noexcept
 {
-    pc--;
-    stack_push((pc >> 8) & 0xFF);
-    stack_push(pc & 0xFF);
-    pc = src;
+    register_pc_--;
+    stack_push((register_pc_ >> 8) & 0xFF);
+    stack_push(register_pc_ & 0xFF);
+    register_pc_ = src;
 }
 
 void cpu_mos6502::op_lda(std::uint16_t src) noexcept
 {
     const auto m = bus_read(src);
-    status::set_negative(status, m & 0x80);
-    status::set_zero(status, !m);
-    A = m;
+    status::set_negative(register_status_, m & 0x80);
+    status::set_zero(register_status_, !m);
+    register_a_ = m;
 }
 
 void cpu_mos6502::op_ldx(std::uint16_t src) noexcept
 {
     const auto m = bus_read(src);
-    status::set_negative(status, m & 0x80);
-    status::set_zero(status, !m);
-    X = m;
+    status::set_negative(register_status_, m & 0x80);
+    status::set_zero(register_status_, !m);
+    register_x_ = m;
 }
 
 void cpu_mos6502::op_ldy(std::uint16_t src) noexcept
 {
     const auto m = bus_read(src);
-    status::set_negative(status, m & 0x80);
-    status::set_zero(status, !m);
-    Y = m;
+    status::set_negative(register_status_, m & 0x80);
+    status::set_zero(register_status_, !m);
+    register_y_ = m;
 }
 
 void cpu_mos6502::op_lsr(std::uint16_t src) noexcept
 {
     auto m = bus_read(src);
-    status::set_carry(status, m & 0x01);
+    status::set_carry(register_status_, m & 0x01);
     m >>= 1;
-    status::set_negative(status, 0);
-    status::set_zero(status, !m);
+    status::set_negative(register_status_, 0);
+    status::set_zero(register_status_, !m);
     bus_write(src, m);
 }
 
 void cpu_mos6502::op_lsr_acc(std::uint16_t src) noexcept
 {
-    auto m = A;
-    status::set_carry(status, m & 0x01);
+    auto m = register_a_;
+    status::set_carry(register_status_, m & 0x01);
     m >>= 1;
-    status::set_negative(status, 0);
-    status::set_zero(status, !m);
-    A = m;
+    status::set_negative(register_status_, 0);
+    status::set_zero(register_status_, !m);
+    register_a_ = m;
 }
 
 void cpu_mos6502::op_nop(std::uint16_t src) noexcept
@@ -545,201 +565,204 @@ void cpu_mos6502::op_nop(std::uint16_t src) noexcept
 void cpu_mos6502::op_ora(std::uint16_t src) noexcept
 {
     auto m = bus_read(src);
-    m = A | m;
-    status::set_negative(status, m & 0x80);
-    status::set_zero(status, !m);
-    A = m;
+    m = register_a_ | m;
+    status::set_negative(register_status_, m & 0x80);
+    status::set_zero(register_status_, !m);
+    register_a_ = m;
 }
 
 void cpu_mos6502::op_pha(std::uint16_t src) noexcept
 {
-    stack_push(A);
+    stack_push(register_a_);
 }
 
 void cpu_mos6502::op_php(std::uint16_t src) noexcept
 {
-    stack_push(status | status::break_flag);
+    stack_push(register_status_ | status::break_flag);
 }
 
 void cpu_mos6502::op_pla(std::uint16_t src) noexcept
 {
-    A = stack_pop();
-    status::set_negative(status, A & 0x80);
-    status::set_zero(status, !A);
+    register_a_ = stack_pop();
+    status::set_negative(register_status_, register_a_ & 0x80);
+    status::set_zero(register_status_, !register_a_);
 }
 
 void cpu_mos6502::op_plp(std::uint16_t src) noexcept
 {
-    status = stack_pop();
-    status::set_constant(status, 1);
+    register_status_ = stack_pop();
+    status::set_constant(register_status_, 1);
 }
 
 void cpu_mos6502::op_rol(std::uint16_t src) noexcept
 {
     std::uint16_t m = bus_read(src);
     m <<= 1;
-    if (status::is_carry_flag_set(status))
+    if (status::is_carry_flag_set(register_status_))
         m |= 0x01;
-    status::set_carry(status, m > 0xFF);
+    status::set_carry(register_status_, m > 0xFF);
     m &= 0xFF;
-    status::set_negative(status, m & 0x80);
-    status::set_zero(status, !m);
+    status::set_negative(register_status_, m & 0x80);
+    status::set_zero(register_status_, !m);
     bus_write(src, static_cast<std::uint8_t>(m));
 }
 
 void cpu_mos6502::op_rol_acc(std::uint16_t src) noexcept
 {
-    std::uint16_t m = A;
+    std::uint16_t m = register_a_;
     m <<= 1;
-    if (status::is_carry_flag_set(status))
+    if (status::is_carry_flag_set(register_status_))
         m |= 0x01;
-    status::set_carry(status, m > 0xFF);
+    status::set_carry(register_status_, m > 0xFF);
     m &= 0xFF;
-    status::set_negative(status, m & 0x80);
-    status::set_zero(status, !m);
-    A = static_cast<std::uint8_t>(m);
+    status::set_negative(register_status_, m & 0x80);
+    status::set_zero(register_status_, !m);
+    register_a_ = static_cast<std::uint8_t>(m);
 }
 
 void cpu_mos6502::op_ror(std::uint16_t src) noexcept
 {
     std::uint16_t m = bus_read(src);
-    if (status::is_carry_flag_set(status))
+    if (status::is_carry_flag_set(register_status_))
         m |= 0x100;
-    status::set_carry(status, m & 0x01);
+    status::set_carry(register_status_, m & 0x01);
     m >>= 1;
     m &= 0xFF;
-    status::set_negative(status, m & 0x80);
-    status::set_zero(status, !m);
+    status::set_negative(register_status_, m & 0x80);
+    status::set_zero(register_status_, !m);
     bus_write(src, static_cast<std::uint8_t>(m));
 }
 
 void cpu_mos6502::op_ror_acc(std::uint16_t src) noexcept
 {
-    std::uint16_t m = A;
-    if (status::is_carry_flag_set(status))
+    std::uint16_t m = register_a_;
+    if (status::is_carry_flag_set(register_status_))
         m |= 0x100;
-    status::set_carry(status, m & 0x01);
+    status::set_carry(register_status_, m & 0x01);
     m >>= 1;
     m &= 0xFF;
-    status::set_negative(status, m & 0x80);
-    status::set_zero(status, !m);
-    A = static_cast<std::uint8_t>(m);
+    status::set_negative(register_status_, m & 0x80);
+    status::set_zero(register_status_, !m);
+    register_a_ = static_cast<std::uint8_t>(m);
 }
 
 void cpu_mos6502::op_rti(std::uint16_t src) noexcept
 {
-    status = stack_pop();
+    register_status_ = stack_pop();
     const auto lo = stack_pop();
     const auto hi = stack_pop();
-    pc = (hi << 8) | lo;
+    register_pc_ = (hi << 8) | lo;
 }
 
 void cpu_mos6502::op_rts(std::uint16_t src) noexcept
 {
     const auto lo = stack_pop();
     const auto hi = stack_pop();
-    pc = ((hi << 8) | lo) + 1;
+    register_pc_ = ((hi << 8) | lo) + 1;
 }
 
 void cpu_mos6502::op_sbc(std::uint16_t src) noexcept
 {
     const auto m = bus_read(src);
-    unsigned int tmp = A - m - (status::is_carry_flag_set(status) ? 0 : 1);
-    status::set_negative(status, tmp & 0x80);
-    status::set_zero(status, !(tmp & 0xFF));
-    status::set_overflow(status, ((A ^ tmp) & 0x80) && ((A ^ m) & 0x80));
+    unsigned int tmp = register_a_ - m - (status::is_carry_flag_set(register_status_) ? 0 : 1);
+    status::set_negative(register_status_, tmp & 0x80);
+    status::set_zero(register_status_, !(tmp & 0xFF));
+    status::set_overflow(register_status_, ((register_a_ ^ tmp) & 0x80) && ((register_a_ ^ m) & 0x80));
 
-    if (status::is_decimal_flag_set(status))
+    if (status::is_decimal_flag_set(register_status_))
     {
-        if (((A & 0x0F) - (status::is_carry_flag_set(status) ? 0 : 1)) < (m & 0x0F))
+        if (((register_a_ & 0x0F) - (status::is_carry_flag_set(register_status_) ? 0 : 1)) < (m & 0x0F))
             tmp -= 6;
         if (tmp > 0x99)
         {
             tmp -= 0x60;
         }
     }
-    status::set_carry(status, tmp < 0x100);
-    A = (tmp & 0xFF);
+    status::set_carry(register_status_, tmp < 0x100);
+    register_a_ = (tmp & 0xFF);
 }
 
 void cpu_mos6502::op_sec(std::uint16_t src) noexcept
 {
-    status::set_carry(status, 1);
+    status::set_carry(register_status_, 1);
 }
 
 void cpu_mos6502::op_sed(std::uint16_t src) noexcept
 {
-    status::set_decimal(status, 1);
+    status::set_decimal(register_status_, 1);
 }
 
 void cpu_mos6502::op_sei(std::uint16_t src) noexcept
 {
-    status::set_interrupt(status, 1);
+    status::set_interrupt(register_status_, 1);
 }
 
 void cpu_mos6502::op_sta(std::uint16_t src) noexcept
 {
-    bus_write(src, A);
+    bus_write(src, register_a_);
 }
 
 void cpu_mos6502::op_stx(std::uint16_t src) noexcept
 {
-    bus_write(src, X);
+    bus_write(src, register_x_);
 }
 
 void cpu_mos6502::op_sty(std::uint16_t src) noexcept
 {
-    bus_write(src, Y);
+    bus_write(src, register_y_);
 }
 
 void cpu_mos6502::op_tax(std::uint16_t src) noexcept
 {
-    const auto m = A;
-    status::set_negative(status, m & 0x80);
-    status::set_zero(status, !m);
-    X = m;
+    const auto m = register_a_;
+    status::set_negative(register_status_, m & 0x80);
+    status::set_zero(register_status_, !m);
+    register_x_ = m;
 }
 
 void cpu_mos6502::op_tay(std::uint16_t src) noexcept
 {
-    const auto m = A;
-    status::set_negative(status, m & 0x80);
-    status::set_zero(status, !m);
-    Y = m;
+    const auto m = register_a_;
+    status::set_negative(register_status_, m & 0x80);
+    status::set_zero(register_status_, !m);
+    register_y_ = m;
 }
 
 void cpu_mos6502::op_tsx(std::uint16_t src) noexcept
 {
-    const auto m = sp;
-    status::set_negative(status, m & 0x80);
-    status::set_zero(status, !m);
-    X = m;
+    const auto m = register_sp_;
+    status::set_negative(register_status_, m & 0x80);
+    status::set_zero(register_status_, !m);
+    register_x_ = m;
 }
 
 void cpu_mos6502::op_txa(std::uint16_t src) noexcept
 {
-    const auto m = X;
-    status::set_negative(status, m & 0x80);
-    status::set_zero(status, !m);
-    A = m;
+    const auto m = register_x_;
+    status::set_negative(register_status_, m & 0x80);
+    status::set_zero(register_status_, !m);
+    register_a_ = m;
 }
 
 void cpu_mos6502::op_txs(std::uint16_t src) noexcept
 {
-    sp = X;
+    register_sp_ = register_x_;
 }
 
 void cpu_mos6502::op_tya(std::uint16_t src) noexcept
 {
-    const auto m = Y;
-    status::set_negative(status, m & 0x80);
-    status::set_zero(status, !m);
-    A = m;
+    const auto m = register_y_;
+    status::set_negative(register_status_, m & 0x80);
+    status::set_zero(register_status_, !m);
+    register_a_ = m;
 }
 
 void cpu_mos6502::op_illegal(std::uint16_t src) noexcept
 {
     illegal_opcode_ = true;
+
+    if (debug_interface_)
+        debug_interface_->on_cpu_illegal_opcode();
 }
 
 void cpu_mos6502::initialize_illegal_opcodes() noexcept
