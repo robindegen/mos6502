@@ -11,7 +11,9 @@
 namespace rua1::model
 {
 
-class ram final : public component, public sidebar_toggleable<view::frmmemory>
+class ram final : public component,
+                  public sidebar_toggleable<view::frmmemory, view::frmmemory_model_interface>,
+                  public view::frmmemory_model_interface
 {
 public:
     explicit ram(view::imain_window &main_window, const config::ram_device_config &config);

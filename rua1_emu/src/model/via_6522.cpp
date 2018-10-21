@@ -5,7 +5,7 @@ namespace rua1::model
 {
 
 via_6522::via_6522(view::imain_window &main_window, const config::via_6522_device_config &config)
-    : sidebar_toggleable<view::frmvia>{config.name(), main_window}
+    : sidebar_toggleable<view::frmvia, view::frmvia_model_interface>{*this, config.name(), main_window}
     , via_{{static_cast<std::uint16_t>(config.iorb_register()), static_cast<std::uint16_t>(config.iora_register()),
             static_cast<std::uint16_t>(config.ddrb_register()), static_cast<std::uint16_t>(config.ddra_register()),
             static_cast<std::uint16_t>(config.t1cl_register()), static_cast<std::uint16_t>(config.t1ch_register()),

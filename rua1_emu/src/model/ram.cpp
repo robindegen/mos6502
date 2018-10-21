@@ -5,7 +5,7 @@ namespace rua1::model
 {
 
 ram::ram(view::imain_window &main_window, const config::ram_device_config &config)
-    : sidebar_toggleable<view::frmmemory>{config.name(), main_window}
+    : sidebar_toggleable<view::frmmemory, view::frmmemory_model_interface>{*this, config.name(), main_window}
     , ram_{static_cast<std::uint16_t>(config.offset()), static_cast<std::uint16_t>(config.size())}
 {
 }

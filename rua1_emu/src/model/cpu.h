@@ -9,7 +9,9 @@
 namespace rua1::model
 {
 
-class cpu final : public sidebar_toggleable<view::frmcpu>, public mos6502::icpu_debug_interface
+class cpu final : public sidebar_toggleable<view::frmcpu, view::frmcpu_model_interface>,
+                  public mos6502::icpu_debug_interface,
+                  public view::frmcpu_model_interface
 {
 public:
     explicit cpu(view::imain_window &main_window, mos6502::bus &bus);
@@ -22,6 +24,11 @@ public:
     auto operator=(const cpu &) noexcept -> cpu & = delete;
 
 private:
+    void on_ui_btn_reset_clicked() override;
+    void on_ui_btn_step_clicked() override;
+    void on_ui_hex_selected() override;
+    void on_ui_dec_selected() override;
+
     void on_view_created() override;
     void on_view_destroyed() override;
     void update_ui();
@@ -36,6 +43,7 @@ private:
     void on_cpu_stack_pop() override;
 
     mos6502::cpu_mos6502 cpu_;
+    bool hex_view_selected_;
 };
 
 } // namespace rua1::model

@@ -11,7 +11,9 @@
 namespace rua1::model
 {
 
-class via_6522 final : public component, public sidebar_toggleable<view::frmvia>
+class via_6522 final : public component,
+                       public sidebar_toggleable<view::frmvia, view::frmvia_model_interface>,
+                       public view::frmvia_model_interface
 {
 public:
     explicit via_6522(view::imain_window &main_window, const config::via_6522_device_config &config);

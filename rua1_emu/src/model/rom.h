@@ -11,7 +11,9 @@
 namespace rua1::model
 {
 
-class rom final : public component, public sidebar_toggleable<view::frmmemory>
+class rom final : public component,
+                  public sidebar_toggleable<view::frmmemory, view::frmmemory_model_interface>,
+                  public view::frmmemory_model_interface
 {
 public:
     explicit rom(view::imain_window &main_window, const config::rom_device_config &config);

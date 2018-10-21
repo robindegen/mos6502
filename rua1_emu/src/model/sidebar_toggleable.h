@@ -7,13 +7,14 @@
 namespace rua1::model
 {
 
-template <typename view_t>
+template <typename view_t, typename model_interface_t>
 class sidebar_toggleable
 {
 public:
-    explicit sidebar_toggleable(std::string text, view::imain_window &main_window)
+    explicit sidebar_toggleable(model_interface_t &model_interface, std::string text, view::imain_window &main_window)
         : main_window_{main_window}
         , view_{}
+        , model_interface_{model_interface}
         , sidebar_button_{main_window.register_toggle_button(
               text, [this](auto checked) { internal_on_sidebar_button_toggled(checked); })}
         , text_{std::move(text)}
@@ -40,7 +41,7 @@ protected:
     void internal_create_view()
     {
         assert(!view_);
-        view_ = new view_t{[this]() { internal_on_view_closed(); }};
+        view_ = new view_t{model_interface_, [this]() { internal_on_view_closed(); }};
         main_window_.add_mdi_child(view_);
         view_->setWindowTitle(QString::fromStdString(text_));
         view_->show();
@@ -79,6 +80,7 @@ private:
 
     view::imain_window &main_window_;
     view_t *view_;
+    model_interface_t &model_interface_;
     view::sidebar_toggle_button *sidebar_button_;
     std::string text_;
 };

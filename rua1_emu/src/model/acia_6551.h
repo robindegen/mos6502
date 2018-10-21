@@ -11,7 +11,9 @@
 namespace rua1::model
 {
 
-class acia_6551 final : public component, public sidebar_toggleable<view::frmacia>
+class acia_6551 final : public component,
+                        public sidebar_toggleable<view::frmacia, view::frmacia_model_interface>,
+                        public view::frmacia_model_interface
 {
 public:
     explicit acia_6551(view::imain_window &main_window, const config::acia_6551_device_config &config);

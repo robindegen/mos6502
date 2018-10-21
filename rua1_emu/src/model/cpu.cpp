@@ -6,15 +6,39 @@ namespace rua1::model
 {
 
 cpu::cpu(view::imain_window &main_window, mos6502::bus &bus)
-    : sidebar_toggleable<view::frmcpu>{"CPU", main_window}
-    , cpu_{bus}
+    : sidebar_toggleable<view::frmcpu, view::frmcpu_model_interface>{*this, "CPU", main_window}
+    , cpu_{bus, this}
+    , hex_view_selected_{true}
 {
 }
 
 cpu::~cpu() = default;
 
+void cpu::on_ui_btn_reset_clicked()
+{
+    cpu_.reset();
+}
+
+void cpu::on_ui_btn_step_clicked()
+{
+    cpu_.step(1);
+}
+
+void cpu::on_ui_hex_selected()
+{
+    hex_view_selected_ = true;
+    update_ui();
+}
+
+void cpu::on_ui_dec_selected()
+{
+    hex_view_selected_ = false;
+    update_ui();
+}
+
 void cpu::on_view_created()
 {
+    view()->set_hex_view(hex_view_selected_);
     update_ui();
 }
 

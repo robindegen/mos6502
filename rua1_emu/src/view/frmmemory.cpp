@@ -5,9 +5,10 @@
 namespace rua1::view
 {
 
-frmmemory::frmmemory(std::function<void()> close_signal, QWidget *parent)
+frmmemory::frmmemory(frmmemory_model_interface &model_interface, std::function<void()> close_signal, QWidget *parent)
     : QFrame(parent)
     , ui_{std::make_unique<Ui::frmmemory>()}
+    , model_interface_{model_interface}
     , close_signal_{std::move(close_signal)}
 {
     ui_->setupUi(this);
