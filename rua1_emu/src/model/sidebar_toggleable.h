@@ -15,11 +15,11 @@ public:
         : main_window_{main_window}
         , view_{}
         , sidebar_button_{main_window.register_toggle_button(
-              text, default_shown, [this](auto checked) { on_sidebar_button_toggled(checked); })}
+              text, default_shown, [this](auto checked) { internal_on_sidebar_button_toggled(checked); })}
         , text_{std::move(text)}
     {
         if (default_shown)
-            create_view();
+            internal_create_view();
     }
 
     virtual ~sidebar_toggleable() = default;
@@ -31,41 +31,41 @@ public:
     auto operator=(const sidebar_toggleable &) noexcept -> sidebar_toggleable & = delete;
 
 protected:
-    void create_view()
-    {
-        assert(!view_);
-        view_ = new view_t{[this]() { on_view_closed(); }};
-        main_window_.add_mdi_child(view_);
-        view_->setWindowTitle(QString::fromStdString(text_));
-        view_->show();
-    }
-
-    void destroy_view()
-    {
-        assert(view_);
-        view_->parentWidget()->close();
-        view_ = nullptr;
-    }
-
     auto view() const noexcept
     {
         return view_;
     }
 
 private:
-    void on_sidebar_button_toggled(const bool checked)
+    void internal_create_view()
+    {
+        assert(!view_);
+        view_ = new view_t{[this]() { internal_on_view_closed(); }};
+        main_window_.add_mdi_child(view_);
+        view_->setWindowTitle(QString::fromStdString(text_));
+        view_->show();
+    }
+
+    void internal_destroy_view()
+    {
+        assert(view_);
+        view_->parentWidget()->close();
+        view_ = nullptr;
+    }
+
+    void internal_on_sidebar_button_toggled(const bool checked)
     {
         if (checked)
         {
-            create_view();
+            internal_create_view();
         }
         else
         {
-            destroy_view();
+            internal_destroy_view();
         }
     }
 
-    void on_view_closed() const
+    void internal_on_view_closed() const
     {
         sidebar_button_->set_checked(false);
     }
