@@ -1,33 +1,111 @@
 {
-    "devices": [{
-            "name": "ROM",
-            "enabled": true,
-            "type": "rom",
-            "offset": "0x8000",
-            "size": "0x8000",
-            "path": "C:/Development/6502/6502_rua1/os/build/firmware.rom"
-        },
-        {
-            "name": "RAM",
-            "enabled": true,
-            "type": "ram",
-            "offset": "0x0000",
-            "size": "0x4000"
-        },
-        {
-            "name": "acia1",
-            "enabled": true,
-            "type": "acia_6551"
-        },
-        {
-            "name": "acia2",
-            "enabled": true,
-            "type": "acia_6551"
-        },
-        {
-            "name": "acia3",
-            "enabled": true,
-            "type": "acia_6551"
-        }
-    ]
+	"devices": [{
+			"name": "ROM",
+			"enabled": true,
+			"type": "rom",
+			"offset": "0x8000",
+			"size": "0x8000",
+			"path": "C:/Development/6502/6502_rua1/os/build/firmware.rom"
+		},
+		{
+			"name": "RAM",
+			"enabled": true,
+			"type": "ram",
+			"offset": "0x0000",
+			"size": "0x4000"
+		},
+		{
+			"name": "via1",
+			"enabled": true,
+			"type": "via_6522",
+			"iorb_register": "0x6000",
+			"iora_register": "0x6001",
+			"ddrb_register": "0x6002",
+			"ddra_register": "0x6003",
+			"t1cl_register": "0x6004",
+			"t1ch_register": "0x6005",
+			"t1ll_register": "0x6006",
+			"t1lh_register": "0x6007",
+			"t2cl_register": "0x6008",
+			"t2ch_register": "0x6009",
+			"sr_register": "0x600A",
+			"acr_register": "0x600B",
+			"pcr_register": "0x600C",
+			"ifr_register": "0x600D",
+			"ier_register": "0x600E",
+			"iora_no_hs_register": "0x600F"
+		},
+		{
+			"name": "via2",
+			"enabled": true,
+			"type": "via_6522",
+			"iorb_register": "0x5000",
+			"iora_register": "0x5001",
+			"ddrb_register": "0x5002",
+			"ddra_register": "0x5003",
+			"t1cl_register": "0x5004",
+			"t1ch_register": "0x5005",
+			"t1ll_register": "0x5006",
+			"t1lh_register": "0x5007",
+			"t2cl_register": "0x5008",
+			"t2ch_register": "0x5009",
+			"sr_register": "0x500A",
+			"acr_register": "0x500B",
+			"pcr_register": "0x500C",
+			"ifr_register": "0x500D",
+			"ier_register": "0x500E",
+			"iora_no_hs_register": "0x500F"
+		},
+		{
+			"name": "via3",
+			"enabled": true,
+			"type": "via_6522",
+			"iorb_register": "0x4800",
+			"iora_register": "0x4801",
+			"ddrb_register": "0x4802",
+			"ddra_register": "0x4803",
+			"t1cl_register": "0x4804",
+			"t1ch_register": "0x4805",
+			"t1ll_register": "0x4806",
+			"t1lh_register": "0x4807",
+			"t2cl_register": "0x4808",
+			"t2ch_register": "0x4809",
+			"sr_register": "0x480A",
+			"acr_register": "0x480B",
+			"pcr_register": "0x480C",
+			"ifr_register": "0x480D",
+			"ier_register": "0x480E",
+			"iora_no_hs_register": "0x480F"
+		},
+		{
+			"name": "acia1",
+			"enabled": true,
+			"type": "acia_6551",
+			"send_recv_register": "0x4400",
+			"status_register": "0x4401",
+			"command_register": "0x4402",
+			"control_register": "0x4403",
+            "simulate_wdc_bugs": true
+		},
+		{
+			"name": "acia2",
+			"enabled": true,
+			"type": "acia_6551",
+			"send_recv_register": "0x4200",
+			"status_register": "0x4204",
+			"command_register": "0x4208",
+			"control_register": "0x420C",
+            "simulate_wdc_bugs": true
+		},
+		{
+			"name": "acia3",
+			"enabled": true,
+			"type": "acia_6551",
+			"send_recv_register": "0x4100",
+			"status_register": "0x4104",
+			"command_register": "0x4108",
+			"control_register": "0x410C",
+            "simulate_wdc_bugs": true
+		}
+	]
 }

@@ -73,6 +73,49 @@ auto load_ram_device_config(const std::map<std::string, json11::Json> &map)
     return std::make_unique<ram_device_config>(name, enabled, offset, size);
 }
 
+auto load_via_6522_device_config(const std::map<std::string, json11::Json> &map)
+{
+    const auto name = json11_helpers::get_string(map, "name");
+    const auto enabled = json11_helpers::get_bool(map, "enabled");
+
+    const auto iorb_register = json11_helpers::get_hex_string(map, "iorb_register");
+    const auto iora_register = json11_helpers::get_hex_string(map, "iora_register");
+    const auto ddrb_register = json11_helpers::get_hex_string(map, "ddrb_register");
+    const auto ddra_register = json11_helpers::get_hex_string(map, "ddra_register");
+    const auto t1cl_register = json11_helpers::get_hex_string(map, "t1cl_register");
+    const auto t1ch_register = json11_helpers::get_hex_string(map, "t1ch_register");
+    const auto t1ll_register = json11_helpers::get_hex_string(map, "t1ll_register");
+    const auto t1lh_register = json11_helpers::get_hex_string(map, "t1lh_register");
+    const auto t2cl_register = json11_helpers::get_hex_string(map, "t2cl_register");
+    const auto t2ch_register = json11_helpers::get_hex_string(map, "t2ch_register");
+    const auto sr_register = json11_helpers::get_hex_string(map, "sr_register");
+    const auto acr_register = json11_helpers::get_hex_string(map, "acr_register");
+    const auto pcr_register = json11_helpers::get_hex_string(map, "pcr_register");
+    const auto ifr_register = json11_helpers::get_hex_string(map, "ifr_register");
+    const auto ier_register = json11_helpers::get_hex_string(map, "ier_register");
+    const auto iora_no_hs_register = json11_helpers::get_hex_string(map, "iora_no_hs_register");
+
+    return std::make_unique<via_6522_device_config>(
+        name, enabled, iorb_register, iora_register, ddrb_register, ddra_register, t1cl_register, t1ch_register,
+        t1ll_register, t1lh_register, t2cl_register, t2ch_register, sr_register, acr_register, pcr_register,
+        ifr_register, ier_register, iora_no_hs_register);
+}
+
+auto load_acia_6551_device_config(const std::map<std::string, json11::Json> &map)
+{
+    const auto name = json11_helpers::get_string(map, "name");
+    const auto enabled = json11_helpers::get_bool(map, "enabled");
+
+    const auto send_recv_register = json11_helpers::get_hex_string(map, "send_recv_register");
+    const auto status_register = json11_helpers::get_hex_string(map, "status_register");
+    const auto command_register = json11_helpers::get_hex_string(map, "command_register");
+    const auto control_register = json11_helpers::get_hex_string(map, "control_register");
+    const auto simulate_wdc_bugs = json11_helpers::get_bool(map, "simulate_wdc_bugs");
+
+    return std::make_unique<acia_6551_device_config>(name, enabled, send_recv_register, status_register,
+                                                     command_register, control_register, simulate_wdc_bugs);
+}
+
 auto load_devices_config(json11::Json &json) -> std::vector<std::unique_ptr<device_config>>
 {
     const auto &object_items = json.object_items();
@@ -111,9 +154,11 @@ auto load_devices_config(json11::Json &json) -> std::vector<std::unique_ptr<devi
         }
         else if (device_type_str == "acia_6551")
         {
+            devices.emplace_back(load_acia_6551_device_config(values));
         }
         else if (device_type_str == "via_6522")
         {
+            devices.emplace_back(load_via_6522_device_config(values));
         }
     }
 

@@ -55,6 +55,8 @@ source_group(model FILES ${RUA1_EMU_MODEL_SOURCES})
 ###############################################################################
 
 set(RUA1_EMU_VIEW_SOURCES
+    src/view/frmacia.cpp
+    src/view/frmvia.cpp
     src/view/frmmain.cpp
     src/view/frmcpu.cpp
     src/view/frmmemory.cpp
@@ -65,6 +67,8 @@ set(RUA1_EMU_VIEW_SOURCES
 source_group(view FILES ${RUA1_EMU_VIEW_SOURCES})
 
 set(RUA1_EMU_VIEW_MOC_HEADERS
+    src/view/frmacia.h
+    src/view/frmvia.h
     src/view/frmmain.h
     src/view/frmcpu.h
     src/view/frmmemory.h
@@ -80,6 +84,8 @@ qt5_wrap_cpp(RUA1_EMU_VIEW_MOC_SOURCES
 source_group(view\\generated FILES ${RUA1_EMU_VIEW_MOC_SOURCES})
 
 set(RUA1_EMU_VIEW_UI_FILES
+    src/view/ui/frmacia.ui
+    src/view/ui/frmvia.ui
     src/view/ui/frmmain.ui
     src/view/ui/frmcpu.ui
     src/view/ui/frmmemory.ui
