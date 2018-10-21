@@ -18,8 +18,14 @@ public:
               text, default_shown, [this](auto checked) { on_sidebar_button_toggled(checked); })}
         , text_{std::move(text)}
     {
+        view_ = new view_t{[this]() { on_view_closed(); }};
+        main_window_.add_mdi_child(view_);
+        view_->setWindowTitle(QString::fromStdString(text_));
+
         if (default_shown)
-            create_view();
+            show_view();
+        else
+            hide_view();
     }
 
     virtual ~sidebar_toggleable() = default;
@@ -31,20 +37,14 @@ public:
     auto operator=(const sidebar_toggleable &) noexcept -> sidebar_toggleable & = delete;
 
 protected:
-    void create_view()
+    void show_view()
     {
-        assert(!view_);
-        view_ = new view_t{[this]() { on_view_closed(); }};
-        main_window_.add_mdi_child(view_);
-        view_->setWindowTitle(QString::fromStdString(text_));
-        view_->show();
+        view_->parentWidget()->show();
     }
 
-    void destroy_view()
+    void hide_view()
     {
-        assert(view_);
-        view_->parentWidget()->close();
-        view_ = nullptr;
+        view_->parentWidget()->hide();
     }
 
     auto view() const noexcept
@@ -57,11 +57,11 @@ private:
     {
         if (checked)
         {
-            create_view();
+            show_view();
         }
         else
         {
-            destroy_view();
+            hide_view();
         }
     }
 
