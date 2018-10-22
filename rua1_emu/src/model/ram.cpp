@@ -12,7 +12,7 @@ ram::ram(view::imain_window &main_window, const config::ram_device_config &confi
 
 ram::~ram() = default;
 
-auto ram::get_device() noexcept -> mos6502::ibus_device &
+auto ram::get_device() noexcept -> emu6502::ibus_device &
 {
     return ram_;
 }

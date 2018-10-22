@@ -1,6 +1,6 @@
-#include <mos6502/via_6522.h>
+#include <emu6502/via_6522.h>
 
-namespace mos6502
+namespace emu6502
 {
 
 via_6522::via_6522(const via_6522_settings settings) noexcept
@@ -32,4 +32,4 @@ auto via_6522::read(const std::uint16_t address) noexcept -> std::tuple<bool, st
     return {false, static_cast<std::uint8_t>(0)};
 }
 
-} // namespace mos6502
+} // namespace emu6502

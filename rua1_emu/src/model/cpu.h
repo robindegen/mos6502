@@ -2,19 +2,19 @@
 
 #include <model/sidebar_toggleable.h>
 #include <view/frmcpu.h>
-#include <mos6502/bus.h>
-#include <mos6502/cpu_mos6502.h>
-#include <mos6502/icpu_debug_interface.h>
+#include <emu6502/bus.h>
+#include <emu6502/cpu_mos6502.h>
+#include <emu6502/icpu_debug_interface.h>
 
 namespace rua1::model
 {
 
 class cpu final : public sidebar_toggleable<view::frmcpu, view::frmcpu_model_interface>,
-                  public mos6502::icpu_debug_interface,
+                  public emu6502::icpu_debug_interface,
                   public view::frmcpu_model_interface
 {
 public:
-    explicit cpu(view::imain_window &main_window, mos6502::bus &bus);
+    explicit cpu(view::imain_window &main_window, emu6502::bus &bus);
     ~cpu();
 
     cpu(cpu &&) noexcept = delete;
@@ -42,7 +42,7 @@ private:
     void on_cpu_stack_push(const std::uint8_t byte) override;
     void on_cpu_stack_pop() override;
 
-    mos6502::cpu_mos6502 cpu_;
+    emu6502::cpu_mos6502 cpu_;
     bool hex_view_selected_;
 };
 

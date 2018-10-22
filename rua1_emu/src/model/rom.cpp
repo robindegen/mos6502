@@ -14,7 +14,7 @@ rom::rom(view::imain_window &main_window, const config::rom_device_config &confi
 
 rom::~rom() = default;
 
-auto rom::get_device() noexcept -> mos6502::ibus_device &
+auto rom::get_device() noexcept -> emu6502::ibus_device &
 {
     return rom_;
 }

@@ -1,8 +1,8 @@
-#include <mos6502/acia_6551.h>
+#include <emu6502/acia_6551.h>
 #include <cassert>
 #include <utility>
 
-namespace mos6502
+namespace emu6502
 {
 
 static constexpr std::uint8_t status_parity_error_bit = 0x01;
@@ -206,4 +206,4 @@ auto acia_6551::read(const std::uint16_t address) noexcept -> std::tuple<bool, s
     return {false, static_cast<std::uint8_t>(0)};
 }
 
-} // namespace mos6502
+} // namespace emu6502

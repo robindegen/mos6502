@@ -5,8 +5,8 @@
 #include <view/imain_window.h>
 #include <view/frmvia.h>
 #include <configuration.h>
-#include <mos6502/bus.h>
-#include <mos6502/via_6522.h>
+#include <emu6502/bus.h>
+#include <emu6502/via_6522.h>
 
 namespace rua1::model
 {
@@ -25,13 +25,13 @@ public:
     via_6522(const via_6522 &) noexcept = delete;
     auto operator=(const via_6522 &) noexcept -> via_6522 & = delete;
 
-    auto get_device() noexcept -> mos6502::ibus_device & override;
+    auto get_device() noexcept -> emu6502::ibus_device & override;
 
 private:
     void on_view_created() override;
     void on_view_destroyed() override;
 
-    mos6502::via_6522 via_;
+    emu6502::via_6522 via_;
 };
 
 } // namespace rua1::model

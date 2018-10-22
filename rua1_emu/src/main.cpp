@@ -1,6 +1,6 @@
-#include <mos6502/cpu_mos6502.h>
-#include <mos6502/rom.h>
-#include <mos6502/bus.h>
+#include <emu6502/cpu_mos6502.h>
+#include <emu6502/rom.h>
+#include <emu6502/bus.h>
 #include <application.h>
 
 int main(int argc, char *argv[])
@@ -19,12 +19,12 @@ int main(int argc, char *argv[])
      * ACIA3 $4100, 4104, 4108, 410C
      */
     /*
-        mos6502::bus bus;
-        mos6502::rom rom{0x8000, 0x8000};
+        emu6502::bus bus;
+        emu6502::rom rom{0x8000, 0x8000};
 
         bus.add(rom);
 
-        mos6502::cpu_mos6502 cpu{bus};
+        emu6502::cpu_mos6502 cpu{bus};
         cpu.run();*/
     return 0;
 }

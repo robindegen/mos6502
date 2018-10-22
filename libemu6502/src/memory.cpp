@@ -1,8 +1,8 @@
-#include <mos6502/memory.h>
+#include <emu6502/memory.h>
 #include <aeon/streams/stream.h>
 #include <stdexcept>
 
-namespace mos6502
+namespace emu6502
 {
 
 void memory::load(aeon::streams::stream &stream, const std::uint16_t offset)
@@ -45,4 +45,4 @@ auto memory::read(const std::uint16_t address) noexcept -> std::tuple<bool, std:
     return {true, data_.at(offset)};
 }
 
-} // namespace mos6502
+} // namespace emu6502

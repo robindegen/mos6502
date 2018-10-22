@@ -1,10 +1,10 @@
-#include <mos6502/cpu_mos6502.h>
-#include <mos6502/bus.h>
-#include <mos6502/icpu_debug_interface.h>
+#include <emu6502/cpu_mos6502.h>
+#include <emu6502/bus.h>
+#include <emu6502/icpu_debug_interface.h>
 #include <status_registers.h>
 #include <functional>
 
-namespace mos6502
+namespace emu6502
 {
 
 // IRQ, reset, NMI vectors
@@ -983,4 +983,4 @@ void cpu_mos6502::initialize_opcodes() noexcept
     instruction_[0x98] = {&cpu_mos6502::addr_imp, &cpu_mos6502::op_tya};
 }
 
-} // namespace mos6502
+} // namespace emu6502

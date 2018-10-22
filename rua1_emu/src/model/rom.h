@@ -5,8 +5,8 @@
 #include <view/imain_window.h>
 #include <view/frmmemory.h>
 #include <configuration.h>
-#include <mos6502/bus.h>
-#include <mos6502/rom.h>
+#include <emu6502/bus.h>
+#include <emu6502/rom.h>
 
 namespace rua1::model
 {
@@ -25,13 +25,13 @@ public:
     rom(const rom &) noexcept = delete;
     auto operator=(const rom &) noexcept -> rom & = delete;
 
-    auto get_device() noexcept -> mos6502::ibus_device & override;
+    auto get_device() noexcept -> emu6502::ibus_device & override;
 
 private:
     void on_view_created() override;
     void on_view_destroyed() override;
 
-    mos6502::rom rom_;
+    emu6502::rom rom_;
 };
 
 } // namespace rua1::model

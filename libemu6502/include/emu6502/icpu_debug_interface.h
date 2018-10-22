@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-namespace mos6502
+namespace emu6502
 {
 
 class cpu_mos6502;
@@ -32,4 +32,4 @@ protected:
     virtual ~icpu_debug_interface() = default;
 };
 
-} // namespace mos6502
+} // namespace emu6502

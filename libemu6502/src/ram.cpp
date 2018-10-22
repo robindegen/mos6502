@@ -1,7 +1,7 @@
-#include <mos6502/ram.h>
+#include <emu6502/ram.h>
 #include <cassert>
 
-namespace mos6502
+namespace emu6502
 {
 
 ram::ram(const std::uint16_t offset, const std::uint16_t size)
@@ -9,4 +9,4 @@ ram::ram(const std::uint16_t offset, const std::uint16_t size)
 {
 }
 
-} // namespace mos6502
+} // namespace emu6502

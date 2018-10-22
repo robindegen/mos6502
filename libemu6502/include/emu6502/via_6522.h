@@ -1,9 +1,9 @@
 #pragma once
 
-#include <mos6502/ibus_device.h>
-#include <mos6502/ic_register.h>
+#include <emu6502/ibus_device.h>
+#include <emu6502/ic_register.h>
 
-namespace mos6502
+namespace emu6502
 {
 
 struct via_6522_settings
@@ -64,4 +64,4 @@ private:
     ic_register iora_no_handshake_register_;
 };
 
-} // namespace mos6502
+} // namespace emu6502

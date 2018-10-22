@@ -1,8 +1,8 @@
 #pragma once
 
-#include <mos6502/memory.h>
+#include <emu6502/memory.h>
 
-namespace mos6502
+namespace emu6502
 {
 
 class ram final : public memory
@@ -18,4 +18,4 @@ public:
     auto operator=(const ram &) noexcept -> ram & = delete;
 };
 
-} // namespace mos6502
+} // namespace emu6502

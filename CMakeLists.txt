@@ -46,5 +46,5 @@ add_subdirectory(dep/google_benchmark)
 add_subdirectory(dep/json11)
 add_subdirectory(dep/libaeon/src)
 
-add_subdirectory(libmos6502)
+add_subdirectory(libemu6502)
 add_subdirectory(rua1_emu)

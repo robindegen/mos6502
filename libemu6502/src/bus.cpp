@@ -1,8 +1,8 @@
-#include <mos6502/bus.h>
-#include <mos6502/ibus_device.h>
+#include <emu6502/bus.h>
+#include <emu6502/ibus_device.h>
 #include <cassert>
 
-namespace mos6502
+namespace emu6502
 {
 
 bus::bus(std::vector<ibus_device *> devices)
@@ -53,4 +53,4 @@ void bus::on_irq() noexcept
     cpu_->on_irq();
 }
 
-} // namespace mos6502
+} // namespace emu6502

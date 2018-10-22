@@ -1,5 +1,6 @@
 #pragma once
-#include "mos6502/ibus_device.h"
+
+#include <emu6502/ibus_device.h>
 
 namespace rua1::model
 {
@@ -16,7 +17,7 @@ public:
     component(const component &) noexcept = delete;
     auto operator=(const component &) noexcept -> component & = delete;
 
-    virtual auto get_device() noexcept -> mos6502::ibus_device & = 0;
+    virtual auto get_device() noexcept -> emu6502::ibus_device & = 0;
 };
 
 } // namespace rua1::model

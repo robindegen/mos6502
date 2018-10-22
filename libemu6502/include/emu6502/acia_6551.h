@@ -1,10 +1,10 @@
 #pragma once
 
-#include <mos6502/ibus_device.h>
-#include <mos6502/ic_register.h>
+#include <emu6502/ibus_device.h>
+#include <emu6502/ic_register.h>
 #include <functional>
 
-namespace mos6502
+namespace emu6502
 {
 
 using acia_6551_receive_func = std::function<void(std::uint8_t)>;
@@ -85,4 +85,4 @@ private:
     acia_6551_receive_func receive_func_;
 };
 
-} // namespace mos6502
+} // namespace emu6502

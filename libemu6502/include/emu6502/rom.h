@@ -1,8 +1,8 @@
 #pragma once
 
-#include <mos6502/memory.h>
+#include <emu6502/memory.h>
 
-namespace mos6502
+namespace emu6502
 {
 
 class rom final : public memory
@@ -21,4 +21,4 @@ private:
     void write(const std::uint16_t address, const std::uint8_t value) noexcept override;
 };
 
-} // namespace mos6502
+} // namespace emu6502

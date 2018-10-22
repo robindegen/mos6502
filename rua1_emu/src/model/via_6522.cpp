@@ -20,7 +20,7 @@ via_6522::via_6522(view::imain_window &main_window, const config::via_6522_devic
 
 via_6522::~via_6522() = default;
 
-auto via_6522::get_device() noexcept -> mos6502::ibus_device &
+auto via_6522::get_device() noexcept -> emu6502::ibus_device &
 {
     return via_;
 }

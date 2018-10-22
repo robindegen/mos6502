@@ -15,7 +15,7 @@ acia_6551::acia_6551(view::imain_window &main_window, const config::acia_6551_de
 
 acia_6551::~acia_6551() = default;
 
-auto acia_6551::get_device() noexcept -> mos6502::ibus_device &
+auto acia_6551::get_device() noexcept -> emu6502::ibus_device &
 {
     return acia_;
 }

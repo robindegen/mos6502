@@ -5,7 +5,7 @@
 namespace rua1::model
 {
 
-cpu::cpu(view::imain_window &main_window, mos6502::bus &bus)
+cpu::cpu(view::imain_window &main_window, emu6502::bus &bus)
     : sidebar_toggleable<view::frmcpu, view::frmcpu_model_interface>{*this, "CPU", main_window}
     , cpu_{bus, this}
     , hex_view_selected_{true}

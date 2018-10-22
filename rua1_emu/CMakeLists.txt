@@ -121,7 +121,7 @@ target_include_directories(rua1_emu
 target_link_libraries(rua1_emu
     aeon_common
     aeon_streams
-    libmos6502
+    libemu6502
     json11
     Qt5::Core
     Qt5::Widgets

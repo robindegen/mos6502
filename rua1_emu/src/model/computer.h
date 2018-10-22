@@ -4,7 +4,7 @@
 #include <model/component.h>
 #include <view/imain_window.h>
 #include <configuration.h>
-#include <mos6502/bus.h>
+#include <emu6502/bus.h>
 #include <vector>
 #include <memory>
 
@@ -26,7 +26,7 @@ public:
 private:
     view::imain_window &main_window_;
     config::configuration config_;
-    mos6502::bus bus_;
+    emu6502::bus bus_;
     cpu cpu_;
 
     std::vector<std::unique_ptr<component>> components_;

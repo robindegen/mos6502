@@ -2,7 +2,7 @@
 
 #include <view/imain_window.h>
 #include <view/sidebar_toggle_button.h>
-#include <mos6502/ibus_device.h>
+#include <emu6502/ibus_device.h>
 
 namespace rua1::model
 {

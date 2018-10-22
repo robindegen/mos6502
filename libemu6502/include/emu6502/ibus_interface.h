@@ -1,6 +1,6 @@
 #pragma once
 
-namespace mos6502
+namespace emu6502
 {
 
 class ibus_interface
@@ -19,4 +19,4 @@ protected:
     ~ibus_interface() = default;
 };
 
-} // namespace mos6502
+} // namespace emu6502

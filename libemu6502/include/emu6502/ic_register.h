@@ -3,7 +3,7 @@
 #include <aeon/common/bitflags.h>
 #include <cstdint>
 
-namespace mos6502
+namespace emu6502
 {
 
 class ic_register
@@ -89,4 +89,4 @@ private:
     std::uint8_t value_;
 };
 
-} // namespace mos6502
+} // namespace emu6502

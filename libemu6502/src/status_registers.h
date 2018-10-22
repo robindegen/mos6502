@@ -1,6 +1,6 @@
 #pragma once
 
-namespace mos6502::status
+namespace emu6502::status
 {
 
 constexpr auto negative_flag = 0x80;
@@ -100,4 +100,4 @@ constexpr auto is_carry_flag_set(const std::uint8_t status) noexcept
     return ((status & carry_flag) ? true : false);
 }
 
-} // namespace mos6502::status
+} // namespace emu6502::status

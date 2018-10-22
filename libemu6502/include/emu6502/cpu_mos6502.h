@@ -8,11 +8,11 @@
 
 #pragma once
 
-#include <mos6502/ibus_interface.h>
+#include <emu6502/ibus_interface.h>
 #include <cstdint>
 #include <array>
 
-namespace mos6502
+namespace emu6502
 {
 
 class icpu_debug_interface;
@@ -205,4 +205,4 @@ private:
     icpu_debug_interface *debug_interface_;
 };
 
-} // namespace mos6502
+} // namespace emu6502

@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <tuple>
 
-namespace mos6502
+namespace emu6502
 {
 
 class ibus_device
@@ -23,4 +23,4 @@ protected:
     ~ibus_device() = default;
 };
 
-} // namespace mos6502
+} // namespace emu6502

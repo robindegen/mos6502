@@ -1,10 +1,10 @@
 #pragma once
 
-#include <mos6502/ibus_device.h>
+#include <emu6502/ibus_device.h>
 #include <aeon/streams/stream_fwd.h>
 #include <vector>
 
-namespace mos6502
+namespace emu6502
 {
 
 class memory : public ibus_device
@@ -45,4 +45,4 @@ protected:
     std::vector<std::uint8_t> data_;
 };
 
-} // namespace mos6502
+} // namespace emu6502
