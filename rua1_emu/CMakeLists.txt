@@ -111,8 +111,6 @@ add_executable(rua1_emu
     ${RUA1_EMU_VIEW_UI_HEADERS}
 )
 
-target_compile_definitions(rua1_emu PRIVATE QT_NO_KEYWORDS)
-
 target_include_directories(rua1_emu
     PUBLIC
         src
