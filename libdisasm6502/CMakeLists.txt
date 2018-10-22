@@ -21,32 +21,25 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 
-cmake_minimum_required(VERSION 3.10)
+set(LIBDISASM6502_SOURCES
+    src/disasm.cpp
+    include/disasm6502/disasm.h
+)
 
-project(mos6502)
+source_group(libdisasm6502 FILES ${LIBDISASM6502_SOURCES})
 
-# Create compile_commands.json when possible, which can be used for
-# analysis tools.
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+add_library(libdisasm6502 STATIC ${LIBDISASM6502_SOURCES})
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/dep/cmake")
-set(CMAKE_PREFIX_PATH "$ENV{QTDIR}")
+target_include_directories(libdisasm6502
+    PUBLIC include
+    PRIVATE src
+)
 
-include(CompilerFlags)
+target_link_libraries(libdisasm6502
+    PUBLIC aeon_common
+)
 
-set(CMAKE_CXX_STANDARD 17)
-
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-
-find_package(Qt5Core)
-find_package(Qt5Widgets)
-
-add_subdirectory(dep/googletest)
-add_subdirectory(dep/google_benchmark)
-add_subdirectory(dep/json11)
-add_subdirectory(dep/libaeon/src)
-
-add_subdirectory(libemu6502)
-add_subdirectory(libdisasm6502)
-add_subdirectory(disasm)
-add_subdirectory(rua1_emu)
+set_target_properties(
+    libdisasm6502 PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+)

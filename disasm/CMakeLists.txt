@@ -21,32 +21,20 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 
-cmake_minimum_required(VERSION 3.10)
+set(DISASM_SOURCES
+    src/main.cpp
+)
 
-project(mos6502)
+add_executable(disasm
+    ${DISASM_SOURCES}
+)
 
-# Create compile_commands.json when possible, which can be used for
-# analysis tools.
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+target_link_libraries(disasm
+    aeon_streams
+    libdisasm6502
+)
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/dep/cmake")
-set(CMAKE_PREFIX_PATH "$ENV{QTDIR}")
-
-include(CompilerFlags)
-
-set(CMAKE_CXX_STANDARD 17)
-
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-
-find_package(Qt5Core)
-find_package(Qt5Widgets)
-
-add_subdirectory(dep/googletest)
-add_subdirectory(dep/google_benchmark)
-add_subdirectory(dep/json11)
-add_subdirectory(dep/libaeon/src)
-
-add_subdirectory(libemu6502)
-add_subdirectory(libdisasm6502)
-add_subdirectory(disasm)
-add_subdirectory(rua1_emu)
+set_target_properties(
+    disasm PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+)

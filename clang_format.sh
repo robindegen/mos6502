@@ -7,4 +7,5 @@ function format {
 }
 
 format $(pwd)/libemu6502
+format $(pwd)/libdisasm6502
 format $(pwd)/rua1_emu
