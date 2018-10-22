@@ -35,6 +35,11 @@ protected:
         return view_;
     }
 
+    auto add_mdi_child(QWidget *widget) const noexcept
+    {
+        main_window_.add_mdi_child(widget);
+    }
+
     virtual void on_view_created() = 0;
     virtual void on_view_destroyed() = 0;
 

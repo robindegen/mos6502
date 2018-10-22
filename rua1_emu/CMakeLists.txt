@@ -123,6 +123,7 @@ target_link_libraries(rua1_emu
     aeon_streams
     libmos6502
     json11
+    qhexedit
     Qt5::Core
     Qt5::Widgets
 )

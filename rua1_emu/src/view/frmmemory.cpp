@@ -13,6 +13,8 @@ frmmemory::frmmemory(frmmemory_model_interface &model_interface, std::function<v
 {
     ui_->setupUi(this);
     setAttribute(Qt::WA_DeleteOnClose);
+
+    connect(ui_->btn_hex_view, &QPushButton::pressed, [this]() { model_interface_.on_ui_btn_hex_view_clicked(); });
 }
 
 frmmemory::~frmmemory() = default;

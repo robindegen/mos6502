@@ -31,6 +31,8 @@ private:
     void on_view_created() override;
     void on_view_destroyed() override;
 
+    void on_ui_btn_hex_view_clicked() override;
+
     mos6502::ram ram_;
 };
 

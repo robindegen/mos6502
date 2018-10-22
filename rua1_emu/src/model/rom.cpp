@@ -27,4 +27,8 @@ void rom::on_view_destroyed()
 {
 }
 
+void rom::on_ui_btn_hex_view_clicked()
+{
+}
+
 } // namespace rua1::model

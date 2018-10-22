@@ -21,31 +21,4 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 
-cmake_minimum_required(VERSION 3.10)
-
-project(mos6502)
-
-# Create compile_commands.json when possible, which can be used for
-# analysis tools.
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/dep/cmake")
-set(CMAKE_PREFIX_PATH "$ENV{QTDIR}")
-
-include(CompilerFlags)
-
-set(CMAKE_CXX_STANDARD 17)
-
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-
-find_package(Qt5Core)
-find_package(Qt5Widgets)
-
-add_subdirectory(dep/googletest)
-add_subdirectory(dep/google_benchmark)
-add_subdirectory(dep/json11)
-add_subdirectory(dep/libaeon/src)
-
-add_subdirectory(libmos6502)
-add_subdirectory(widgets)
-add_subdirectory(rua1_emu)
+add_subdirectory(qhexedit)

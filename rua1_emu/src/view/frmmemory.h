@@ -21,6 +21,8 @@ public:
     frmmemory_model_interface(const frmmemory_model_interface &) noexcept = delete;
     auto operator=(const frmmemory_model_interface &) noexcept -> frmmemory_model_interface & = delete;
 
+    virtual void on_ui_btn_hex_view_clicked() = 0;
+
 protected:
     frmmemory_model_interface() = default;
     virtual ~frmmemory_model_interface() = default;
