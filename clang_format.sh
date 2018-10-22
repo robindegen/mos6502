@@ -8,4 +8,5 @@ function format {
 
 format $(pwd)/libemu6502
 format $(pwd)/libdisasm6502
+format $(pwd)/widgets
 format $(pwd)/rua1_emu

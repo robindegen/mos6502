@@ -21,33 +21,43 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 
-cmake_minimum_required(VERSION 3.10)
+set(WIDGETS_TEST_SOURCES
+    src/main.cpp
+    src/frmmain.cpp
+)
 
-project(mos6502)
+source_group(widgets_tests FILES ${WIDGETS_TEST_SOURCES})
 
-# Create compile_commands.json when possible, which can be used for
-# analysis tools.
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(WIDGETS_TEST_MOC_HEADERS
+    src/frmmain.h
+)
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/dep/cmake")
-set(CMAKE_PREFIX_PATH "$ENV{QTDIR}")
+source_group(widgets_tests FILES ${WIDGETS_TEST_MOC_HEADERS})
 
-include(CompilerFlags)
+qt5_wrap_cpp(WIDGETS_TEST_MOC_SOURCES
+    ${WIDGETS_TEST_MOC_HEADERS}
+)
 
-set(CMAKE_CXX_STANDARD 17)
+source_group(generated FILES ${WIDGETS_TEST_MOC_SOURCES})
 
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+add_executable(widgets_tests
+    ${WIDGETS_TEST_SOURCES}
+    ${WIDGETS_TEST_MOC_HEADERS}
+    ${WIDGETS_TEST_MOC_SOURCES}
+)
 
-find_package(Qt5Core)
-find_package(Qt5Widgets)
+target_include_directories(widgets_tests
+    PUBLIC
+        src
+)
 
-add_subdirectory(dep/googletest)
-add_subdirectory(dep/google_benchmark)
-add_subdirectory(dep/json11)
-add_subdirectory(dep/libaeon/src)
+target_link_libraries(widgets_tests
+    libwidgets
+    Qt5::Core
+    Qt5::Widgets
+)
 
-add_subdirectory(libemu6502)
-add_subdirectory(libdisasm6502)
-add_subdirectory(disasm)
-add_subdirectory(widgets)
-add_subdirectory(rua1_emu)
+set_target_properties(
+    widgets_tests PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+)
