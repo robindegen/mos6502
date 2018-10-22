@@ -20,6 +20,21 @@ public:
 
     void load(aeon::streams::stream &stream, const std::uint16_t offset = 0);
 
+    auto offset() const noexcept
+    {
+        return offset_;
+    }
+
+    auto data() const noexcept
+    {
+        return std::data(data_);
+    }
+
+    auto size() const noexcept
+    {
+        return std::size(data_);
+    }
+
 protected:
     explicit memory(const std::uint16_t offset, const std::uint16_t size);
 
