@@ -13,43 +13,43 @@ static auto address_mode_accumulator(aeon::common::span<std::uint8_t>::iterator 
 
 static auto address_mode_immediate(aeon::common::span<std::uint8_t>::iterator &itr) -> std::string
 {
-    return "#$" + aeon::common::string::int_to_hex_string(*(++itr));
+    return std::string{"#$"} + aeon::common::string::uint8_to_hex_string(*(++itr));
 }
 
 static auto address_mode_absolute(aeon::common::span<std::uint8_t>::iterator &itr) -> std::string
 {
-    const auto part1 = aeon::common::string::int_to_hex_string(*(++itr));
-    const auto part2 = aeon::common::string::int_to_hex_string(*(++itr));
-    return "$" + part2 + part1;
+    const auto part1 = aeon::common::string::uint8_to_hex_string(*(++itr));
+    const auto part2 = aeon::common::string::uint8_to_hex_string(*(++itr));
+    return std::string{"$"} + part2 + part1;
 }
 
 static auto address_mode_zero_page(aeon::common::span<std::uint8_t>::iterator &itr) -> std::string
 {
-    return "$" + aeon::common::string::int_to_hex_string(*(++itr));
+    return std::string{"$"} + aeon::common::string::uint8_to_hex_string(*(++itr));
 }
 
 static auto address_mode_index_x_zero_page(aeon::common::span<std::uint8_t>::iterator &itr) -> std::string
 {
-    return "$" + aeon::common::string::int_to_hex_string(*(++itr)) + ",X";
+    return std::string{"$"} + aeon::common::string::uint8_to_hex_string(*(++itr)) + ",X";
 }
 
 static auto address_mode_index_y_zero_page(aeon::common::span<std::uint8_t>::iterator &itr) -> std::string
 {
-    return "$" + aeon::common::string::int_to_hex_string(*(++itr)) + ",Y";
+    return std::string{"$"} + aeon::common::string::uint8_to_hex_string(*(++itr)) + ",Y";
 }
 
 static auto address_mode_index_x_absolute(aeon::common::span<std::uint8_t>::iterator &itr) -> std::string
 {
-    const auto part1 = aeon::common::string::int_to_hex_string(*(++itr));
-    const auto part2 = aeon::common::string::int_to_hex_string(*(++itr));
-    return "$" + part2 + part1 + ",X";
+    const auto part1 = aeon::common::string::uint8_to_hex_string(*(++itr));
+    const auto part2 = aeon::common::string::uint8_to_hex_string(*(++itr));
+    return std::string{"$"} + part2 + part1 + ",X";
 }
 
 static auto address_mode_index_y_absolute(aeon::common::span<std::uint8_t>::iterator &itr) -> std::string
 {
-    const auto part1 = aeon::common::string::int_to_hex_string(*(++itr));
-    const auto part2 = aeon::common::string::int_to_hex_string(*(++itr));
-    return "$" + part2 + part1 + ",Y";
+    const auto part1 = aeon::common::string::uint8_to_hex_string(*(++itr));
+    const auto part2 = aeon::common::string::uint8_to_hex_string(*(++itr));
+    return std::string{"$"} + part2 + part1 + ",Y";
 }
 
 static auto address_mode_implied(aeon::common::span<std::uint8_t>::iterator &itr) -> std::string
@@ -59,24 +59,24 @@ static auto address_mode_implied(aeon::common::span<std::uint8_t>::iterator &itr
 
 static auto address_mode_relative(aeon::common::span<std::uint8_t>::iterator &itr) -> std::string
 {
-    return "$" + aeon::common::string::int_to_hex_string(*(++itr));
+    return std::string{"$"} + aeon::common::string::uint8_to_hex_string(*(++itr));
 }
 
 static auto address_mode_indexed_x_indirect(aeon::common::span<std::uint8_t>::iterator &itr) -> std::string
 {
-    return "$(" + aeon::common::string::int_to_hex_string(*(++itr)) + ",X)";
+    return std::string{"$("} + aeon::common::string::uint8_to_hex_string(*(++itr)) + ",X)";
 }
 
 static auto address_mode_indexed_y_indirect(aeon::common::span<std::uint8_t>::iterator &itr) -> std::string
 {
-    return "$(" + aeon::common::string::int_to_hex_string(*(++itr)) + "),Y";
+    return std::string{"$("} + aeon::common::string::uint8_to_hex_string(*(++itr)) + "),Y";
 }
 
 static auto address_mode_absolute_indirect(aeon::common::span<std::uint8_t>::iterator &itr) -> std::string
 {
-    const auto part1 = aeon::common::string::int_to_hex_string(*(++itr));
-    const auto part2 = aeon::common::string::int_to_hex_string(*(++itr));
-    return "($" + part2 + part1 + ")";
+    const auto part1 = aeon::common::string::uint8_to_hex_string(*(++itr));
+    const auto part2 = aeon::common::string::uint8_to_hex_string(*(++itr));
+    return std::string{"($"} + part2 + part1 + ")";
 }
 
 using addressing_mode_decode_func = auto (*)(aeon::common::span<std::uint8_t>::iterator &itr) -> std::string;
@@ -349,8 +349,8 @@ auto disassemble(const aeon::common::span<std::uint8_t> bytes, const std::uint16
         // Special case for the interrupt vector table
         if (is_interrupt_vector_address(address))
         {
-            const auto part1 = aeon::common::string::int_to_hex_string(*itr);
-            const auto part2 = aeon::common::string::int_to_hex_string(*(++itr));
+            const auto part1 = aeon::common::string::uint8_to_hex_string(*itr);
+            const auto part2 = aeon::common::string::uint8_to_hex_string(*(++itr));
             std::string disassembly_str = ".dw #$";
             disassembly_str += part2;
             disassembly_str += part1;
@@ -365,7 +365,7 @@ auto disassemble(const aeon::common::span<std::uint8_t> bytes, const std::uint16
         if (instruction_info.decode_func == nullptr)
         {
             std::string disassembly_str = ".db #$";
-            disassembly_str += aeon::common::string::int_to_hex_string(*itr);
+            disassembly_str += aeon::common::string::uint8_to_hex_string(*itr);
             disassembly.emplace_back(address, std::move(disassembly_str),
                                      aeon::common::span<std::uint8_t>{itr, itr + 1});
 
