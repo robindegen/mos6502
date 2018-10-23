@@ -20,7 +20,7 @@ static auto address_mode_absolute(aeon::common::span<std::uint8_t>::iterator &it
 {
     const auto part1 = aeon::common::string::int_to_hex_string(*(++itr));
     const auto part2 = aeon::common::string::int_to_hex_string(*(++itr));
-    return "$" + part1 + part2;
+    return "$" + part2 + part1;
 }
 
 static auto address_mode_zero_page(aeon::common::span<std::uint8_t>::iterator &itr) -> std::string
@@ -42,14 +42,14 @@ static auto address_mode_index_x_absolute(aeon::common::span<std::uint8_t>::iter
 {
     const auto part1 = aeon::common::string::int_to_hex_string(*(++itr));
     const auto part2 = aeon::common::string::int_to_hex_string(*(++itr));
-    return "$" + part1 + part2 + ",X";
+    return "$" + part2 + part1 + ",X";
 }
 
 static auto address_mode_index_y_absolute(aeon::common::span<std::uint8_t>::iterator &itr) -> std::string
 {
     const auto part1 = aeon::common::string::int_to_hex_string(*(++itr));
     const auto part2 = aeon::common::string::int_to_hex_string(*(++itr));
-    return "$" + part1 + part2 + ",Y";
+    return "$" + part2 + part1 + ",Y";
 }
 
 static auto address_mode_implied(aeon::common::span<std::uint8_t>::iterator &itr) -> std::string
@@ -76,7 +76,7 @@ static auto address_mode_absolute_indirect(aeon::common::span<std::uint8_t>::ite
 {
     const auto part1 = aeon::common::string::int_to_hex_string(*(++itr));
     const auto part2 = aeon::common::string::int_to_hex_string(*(++itr));
-    return "($" + part1 + part2 + ")";
+    return "($" + part2 + part1 + ")";
 }
 
 using addressing_mode_decode_func = auto (*)(aeon::common::span<std::uint8_t>::iterator &itr) -> std::string;
