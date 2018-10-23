@@ -1,5 +1,4 @@
 #include <model/cpu.h>
-#include <QtWidgets>
 #include <cassert>
 
 namespace rua1::model
