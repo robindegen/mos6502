@@ -331,7 +331,8 @@ void initialize()
     instruction[0x98] = {address_mode_implied, "tya"};
 }
 
-auto disassemble(const aeon::common::span<std::uint8_t> bytes, const std::uint16_t offset) -> std::vector<disassembled_instruction>
+auto disassemble(const aeon::common::span<std::uint8_t> bytes, const std::uint16_t offset)
+    -> std::vector<disassembled_instruction>
 {
     std::vector<disassembled_instruction> disassembly;
 
@@ -342,8 +343,9 @@ auto disassemble(const aeon::common::span<std::uint8_t> bytes, const std::uint16
 
         if (instruction_info.decode_func == nullptr)
         {
-            disassembly.push_back({address, ".db " + aeon::common::string::int_to_hex_string(*itr),
-                                   aeon::common::span<std::uint8_t>{itr, itr + 1}});
+            std::string disassembly_str = ".db " + aeon::common::string::int_to_hex_string(*itr);
+            disassembly.emplace_back(address, std::move(disassembly_str),
+                                     aeon::common::span<std::uint8_t>{itr, itr + 1});
 
             ++address;
             continue;
@@ -356,9 +358,16 @@ auto disassemble(const aeon::common::span<std::uint8_t> bytes, const std::uint16
             break;
 
         const auto first_itr = itr;
-        const auto disassembly_str =
-            aeon::common::string::trimmed(instruction_info.opcode + " " + instruction_info.decode_func(itr));
-        disassembly.push_back({address, disassembly_str, aeon::common::span<std::uint8_t>{first_itr, itr + 1}});
+
+        std::string disassembly_str;
+
+        if (instruction_info.decode_func == address_mode_implied)
+            disassembly_str = instruction_info.opcode;
+        else
+            disassembly_str = instruction_info.opcode + " " + instruction_info.decode_func(itr);
+
+        disassembly.emplace_back(address, std::move(disassembly_str),
+                                 aeon::common::span<std::uint8_t>{first_itr, itr + 1});
         address += static_cast<std::uint16_t>(instruction_length);
     }
 

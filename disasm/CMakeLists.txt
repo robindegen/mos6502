@@ -30,6 +30,7 @@ add_executable(disasm
 )
 
 target_link_libraries(disasm
+    aeon_common
     aeon_streams
     libdisasm6502
 )
