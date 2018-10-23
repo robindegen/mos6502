@@ -331,6 +331,11 @@ void initialize()
     instruction[0x98] = {address_mode_implied, "tya"};
 }
 
+auto is_interrupt_vector_address(const std::uint16_t address) noexcept
+{
+    return address == 0xfffa || address == 0xfffc || address == 0xfffe;
+}
+
 auto disassemble(const aeon::common::span<std::uint8_t> bytes, const std::uint16_t offset)
     -> std::vector<disassembled_instruction>
 {
@@ -339,6 +344,22 @@ auto disassemble(const aeon::common::span<std::uint8_t> bytes, const std::uint16
     auto address = offset;
     for (auto itr = std::begin(bytes); itr != std::end(bytes); ++itr)
     {
+        const auto first_itr = itr;
+
+        // Special case for the interrupt vector table
+        if (is_interrupt_vector_address(address))
+        {
+            const auto part1 = aeon::common::string::int_to_hex_string(*itr);
+            const auto part2 = aeon::common::string::int_to_hex_string(*(++itr));
+            std::string disassembly_str = ".dw #$";
+            disassembly_str += part2;
+            disassembly_str += part1;
+            disassembly.emplace_back(address, std::move(disassembly_str),
+                                     aeon::common::span<std::uint8_t>{first_itr, itr + 1});
+            address += 2;
+            continue;
+        }
+
         const auto instruction_info = instruction[*itr];
 
         if (instruction_info.decode_func == nullptr)
