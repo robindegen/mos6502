@@ -343,7 +343,8 @@ auto disassemble(const aeon::common::span<std::uint8_t> bytes, const std::uint16
 
         if (instruction_info.decode_func == nullptr)
         {
-            std::string disassembly_str = ".db " + aeon::common::string::int_to_hex_string(*itr);
+            std::string disassembly_str = ".db #$";
+            disassembly_str += aeon::common::string::int_to_hex_string(*itr);
             disassembly.emplace_back(address, std::move(disassembly_str),
                                      aeon::common::span<std::uint8_t>{itr, itr + 1});
 
@@ -357,14 +358,16 @@ auto disassemble(const aeon::common::span<std::uint8_t> bytes, const std::uint16
         if (length_remaining < instruction_length)
             break;
 
-        const auto first_itr = itr;
-
         std::string disassembly_str;
 
         if (instruction_info.decode_func == address_mode_implied)
             disassembly_str = instruction_info.opcode;
         else
-            disassembly_str = instruction_info.opcode + " " + instruction_info.decode_func(itr);
+        {
+            disassembly_str = instruction_info.opcode;
+            disassembly_str += ' ';
+            disassembly_str += instruction_info.decode_func(itr);
+        }
 
         disassembly.emplace_back(address, std::move(disassembly_str),
                                  aeon::common::span<std::uint8_t>{first_itr, itr + 1});
