@@ -121,7 +121,7 @@ static auto get_instruction_length(const instruction &i) noexcept -> int
 
 static std::array<instruction, 256> instruction{{}};
 
-void initialize()
+void initialize(const cpu_target target)
 {
     instruction[0x69] = {address_mode_immediate, "adc"};
     instruction[0x6D] = {address_mode_absolute, "adc"};
@@ -329,6 +329,16 @@ void initialize()
     instruction[0x9A] = {address_mode_implied, "txs"};
 
     instruction[0x98] = {address_mode_implied, "tya"};
+
+    // Additional 65c02 instructions
+    // TODO: Expand. See http://6502.org/tutorials/65c02opcodes.html
+    if (target == cpu_target::target_65c02)
+    {
+        instruction[0xDA] = {address_mode_implied, "phx"};
+        instruction[0x5A] = {address_mode_implied, "phy"};
+        instruction[0xFA] = {address_mode_implied, "plx"};
+        instruction[0x7A] = {address_mode_implied, "phy"};
+    }
 }
 
 auto is_interrupt_vector_address(const std::uint16_t address) noexcept

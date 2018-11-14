@@ -46,7 +46,13 @@ private:
     aeon::common::span<std::uint8_t> bytes_;
 };
 
-void initialize();
+enum class cpu_target
+{
+    target_6502,
+    target_65c02
+};
+
+void initialize(const cpu_target target = cpu_target::target_65c02);
 
 auto disassemble(const aeon::common::span<std::uint8_t> bytes, const std::uint16_t offset = 0)
     -> std::vector<disassembled_instruction>;
