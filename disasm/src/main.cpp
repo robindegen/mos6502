@@ -44,8 +44,16 @@ int main(int argc, char *argv[])
     {
         disasm6502::initialize();
 
-        auto input = load_from_stdin();
-        //auto input = load_from_file("firmware.rom");
+        std::vector<std::uint8_t> input;
+
+        if (argc == 1)
+        {
+            input = load_from_stdin();
+        }
+        else
+        {
+            input = load_from_file(argv[1]);
+        }
 
         const auto disassembled_file = disasm6502::disassemble(aeon::common::span{input}, offset);
 
